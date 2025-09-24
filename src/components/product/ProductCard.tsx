@@ -94,7 +94,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       if (error.response?.status === 401) {
         setLocalError('Please login to add items to cart');
       } else {
-        setLocalError(error.response?.data?.message || 'Failed to add to cart. Please try again.');
+        setLocalError(error.response?.data?.message || 'Failed to add to cart. Please login and try again.');
       }
     } finally {
       setIsAddingToCart(false);
