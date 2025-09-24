@@ -23,7 +23,7 @@ class Config:
         'http://localhost:5173', 
         'http://localhost:3000',
         'http://127.0.0.1:5173',
-        'http://192.168.0.111:3000',
+        'http://192.168.0.111:5000',
         'http://127.0.0.1:3000',
         'https://fiture99.github.io',
         'https://fiture99.github.io/Marche'
@@ -41,7 +41,8 @@ class DevelopmentConfig(Config):
         'http://localhost:8000',
         'http://127.0.0.1:8000',
         'https://fiture99.github.io',
-        'https://fiture99.github.io/Marche'
+        'https://fiture99.github.io/Marche',
+        'http://192.168.0.111:5000',
     ]
 
 class ProductionConfig(Config):
@@ -49,7 +50,8 @@ class ProductionConfig(Config):
     # Update with your production domain
     CORS_ORIGINS = [
         'https://fiture99.github.io',
-        'https://fiture99.github.io/Marche'
+        'https://fiture99.github.io/Marche',
+        'http://192.168.0.111:5000'
     ]
 
 class TestingConfig(Config):
