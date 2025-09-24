@@ -119,7 +119,7 @@ export const ProductDetail: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Product Not Found</h2>
           <p className="text-gray-600 mb-6">{error || 'The product you are looking for does not exist.'}</p>
           
-          <Button onClick={() => navigate('/shop')}>
+          <Button onClick={() => navigate('/Marche/shop')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Shop
           </Button>
@@ -140,11 +140,11 @@ export const ProductDetail: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-1 text-sm text-gray-600 mb-6">
-          <button onClick={() => navigate('/')} className="hover:text-emerald-600 transition-colors">Home</button>
+          <button onClick={() => navigate('/Marche/')} className="hover:text-emerald-600 transition-colors">Home</button>
           <ChevronRight className="w-4 h-4" />
-          <button onClick={() => navigate('/shop')} className="hover:text-emerald-600 transition-colors">Shop</button>
+          <button onClick={() => navigate('/Marche/shop')} className="hover:text-emerald-600 transition-colors">Shop</button>
           <ChevronRight className="w-4 h-4" />
-          <button onClick={() => navigate(`/categories/${product.category?.id}`)} className="hover:text-emerald-600 transition-colors">
+          <button onClick={() => navigate(`/Marche/categories/${product.category?.id}`)} className="hover:text-emerald-600 transition-colors">
             {categoryName}
           </button>
           <ChevronRight className="w-4 h-4" />

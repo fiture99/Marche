@@ -121,12 +121,12 @@ export const Home: React.FC = () => {
             and enjoy seamless shopping with mobile money integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/shop">
+            <Link to="/Marche/shop">
               <Button size="lg" variant="outline" className=" text-emerald-600 hover:bg-gray-100">
                 Start Shopping
               </Button>
             </Link>
-            <Link to="/register">
+            <Link to="/Marche/register">
               <Button
                 size="lg"
                 variant="outline"
@@ -203,7 +203,7 @@ export const Home: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <Link to="/shop">
+                <Link to="/Marche/shop">
                   <Button size="lg" variant="outline">
                     View All Products
                   </Button>
@@ -230,7 +230,7 @@ export const Home: React.FC = () => {
             {categories.slice(0, 6).map((category) => (
               <Link
                 key={category.id}
-                to={`/categories/${category.id}`}
+                to={`/Marche/categories/${category.id}`}
                 className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
               >
                 <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
@@ -257,7 +257,7 @@ export const Home: React.FC = () => {
             {vendors.slice(0, 3).map((vendor) => (
               <Link
                 key={vendor.id}
-                to={`/vendors/${vendor.id}`}
+                to={`/Marche/vendors/${vendor.id}`}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
               >
                 {vendor.banner && (
