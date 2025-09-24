@@ -32,7 +32,7 @@ export const Login: React.FC = () => {
         text: 'Welcome back!',
         confirmButtonText: 'Continue',
       }).then(() => {
-        navigate('/');
+        navigate('/Marche/');
       });
     } catch (err) {
       Swal.fire({
