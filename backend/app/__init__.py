@@ -188,7 +188,7 @@ def create_app(config_name=None):
     CORS(app, 
          origins=app.config['CORS_ORIGINS'],
          supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization']
+         allow_headers=['Content-Type', 'Authorization'],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     
     # Initialize extensions with app

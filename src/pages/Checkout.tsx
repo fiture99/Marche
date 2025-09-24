@@ -47,13 +47,13 @@ export const Checkout: React.FC = () => {
       
       if (!isAuthenticated) {
         console.log('🚫 Not authenticated, redirecting to login');
-        navigate('/login?returnUrl=/checkout');
+        navigate('/Marche/login?returnUrl=/checkout');
         return;
       }
       
       if (items.length === 0 && !orderCreated) {
         console.log('🛒 Cart empty with no order, redirecting to shop');
-        navigate('/shop');
+        navigate('/Marche/shop');
         return;
       }
       
