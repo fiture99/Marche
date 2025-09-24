@@ -47,7 +47,7 @@ export const Checkout: React.FC = () => {
       
       if (!isAuthenticated) {
         console.log('🚫 Not authenticated, redirecting to login');
-        navigate('/Marche/login?returnUrl=/checkout');
+        navigate('/Marche/login');
         return;
       }
       
