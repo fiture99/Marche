@@ -38,7 +38,7 @@ class DevelopmentConfig(Config):
     # Add more origins for development if needed
     CORS_ORIGINS = Config.CORS_ORIGINS + [
         'http://localhost:8000',
-        'http://127.0.0.1:8000'
+        'http://127.0.0.1:8000',
         'https://fiture99.github.io',
         'https://fiture99.github.io/Marche'
     ]
