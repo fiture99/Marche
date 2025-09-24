@@ -43,8 +43,8 @@ class ProductionConfig(Config):
     DEBUG = False
     # Update with your production domain
     CORS_ORIGINS = [
-        'https://yourproductiondomain.com',
-        'https://www.yourproductiondomain.com'
+        'https://fiture99.github.io',
+        'https://fiture99.github.io/Marche'
     ]
 
 class TestingConfig(Config):

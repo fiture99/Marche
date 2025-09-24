@@ -65,7 +65,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link 
-            to="/Marche/" 
+            to="/" 
             className="flex items-center space-x-3 group"
           >
             <div className="relative">
@@ -119,14 +119,14 @@ export const Header: React.FC = () => {
             </div>
             
             <Link 
-              to="/Marche/shop" 
+              to="/shop" 
               className="group relative px-4 py-2 text-gray-600 hover:text-emerald-600 transition-all duration-200 text-sm font-medium rounded-lg hover:bg-emerald-50"
             >
               Products
               <div className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
             </Link>
             <Link 
-              to="/Marche/vendors" 
+              to="/vendors" 
               className="group relative px-4 py-2 text-gray-600 hover:text-emerald-600 transition-all duration-200 text-sm font-medium rounded-lg hover:bg-emerald-50"
             >
               Shops
@@ -189,14 +189,14 @@ export const Header: React.FC = () => {
                           
                   <div className="py-2">
                     <Link
-                      to="/Marche/profile"
+                      to="/profile"
                       className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-all duration-200"
                     >
                       <User className="w-4 h-4 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
                       My Profile
                     </Link>
                     <Link
-                      to="/Marche/orders"
+                      to="/orders"
                       className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-all duration-200"
                     >
                       <Package className="w-4 h-4 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
@@ -204,7 +204,7 @@ export const Header: React.FC = () => {
                     </Link>
                     {user.role === 'vendor' && (
                       <Link
-                        to="/Marche/vendor/dashboard"
+                        to="/vendor/dashboard"
                         className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-all duration-200"
                       >
                         <Store className="w-4 h-4 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
@@ -213,7 +213,7 @@ export const Header: React.FC = () => {
                     )}
                     {user.role === 'admin' && (
                       <Link
-                        to="/Marche/admin"
+                        to="/admin"
                         className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-all duration-200"
                       >
                         <Settings className="w-4 h-4 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
@@ -236,10 +236,10 @@ export const Header: React.FC = () => {
 
             ) : (
               <div className="flex items-center space-x-3 ml-2">
-                <Link to="/Marche/login">
+                <Link to="/login">
                   <Button variant="ghost" size="sm" className="font-medium">Sign In</Button>
                 </Link>
-                <Link to="/Marche/register">
+                <Link to="/register">
                   <Button size="sm" className="font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700">
                     Get Started
                   </Button>
@@ -286,7 +286,7 @@ export const Header: React.FC = () => {
               </form>
               
               <Link
-                to="/Marche/shop"
+                to="/shop"
                 className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -297,7 +297,7 @@ export const Header: React.FC = () => {
               </Link>
               
               <Link
-                to="/Marche/vendors"
+                to="/vendors"
                 className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -310,7 +310,7 @@ export const Header: React.FC = () => {
               {user ? (
                 <>
                   <Link
-                    to="/Marche/profile"
+                    to="/profile"
                     className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -318,7 +318,7 @@ export const Header: React.FC = () => {
                     My Profile
                   </Link>
                   <Link
-                    to="/Marche/orders"
+                    to="/orders"
                     className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -327,7 +327,7 @@ export const Header: React.FC = () => {
                   </Link>
                   {user.role === 'vendor' && (
                     <Link
-                      to="/Marche/vendor/dashboard"
+                      to="/vendor/dashboard"
                       className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -347,10 +347,10 @@ export const Header: React.FC = () => {
                 </>
               ) : (
                 <div className="flex flex-col space-y-2 px-2 pt-4 border-t border-gray-100">
-                  <Link to="/Marche/login" className="w-full" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/login" className="w-full" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" size="sm" className="w-full font-medium">Sign In</Button>
                   </Link>
-                  <Link to="/Marche/register" className="w-full" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/register" className="w-full" onClick={() => setIsMenuOpen(false)}>
                     <Button size="sm" className="w-full font-medium bg-gradient-to-r from-emerald-500 to-emerald-600">
                       Get Started
                     </Button>

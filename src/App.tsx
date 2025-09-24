@@ -26,17 +26,17 @@ function App() {
             <Header />
             <main className="flex-1">
               <Routes>
-                <Route path="/Marche/" element={<Home />} />
-                <Route path="/Marche/shop" element={<Shop />} />
-                <Route path="/Marche/products/:id" element={<ProductDetail />} />
-                <Route path="/Marche/vendors" element={<CustomerVendors />} />
-                <Route path="/Marche/login" element={<Login />} />
-                <Route path="/Marche/register" element={<Register />} />
-                <Route path="/Marche/checkout" element={<Checkout />} />
-                <Route path="/Marche/admin" element={<AdminDashboard />} />
-                <Route path="/Marche/admin/*" element={<AdminDashboard />} />
-                <Route path="/Marche/vendor/*" element={<VendorDashboard />} />
-                <Route path="/Marche/orders" element={<CustomerOrder />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/vendors" element={<CustomerVendors />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/*" element={<AdminDashboard />} />
+                <Route path="/vendor/*" element={<VendorDashboard />} />
+                <Route path="/orders" element={<CustomerOrder />} />
               </Routes>
             </main>
             <Footer />
