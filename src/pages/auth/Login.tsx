@@ -24,17 +24,6 @@ export const Login: React.FC = () => {
     try {
       // Attempt login (your login function should return user info or save it to localStorage)
       const user = await login(email, password);
-
-<<<<<<< HEAD
-      Swal.fire({
-        icon: 'success',
-        title: 'Login Successful',
-        text: 'Welcome back!',
-        confirmButtonText: 'Continue',
-      }).then(() => {
-        navigate('/Marche/');
-      });
-=======
       // ✅ Show success popup
       // Swal.fire({
       //   icon: 'success',
