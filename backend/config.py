@@ -6,7 +6,9 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:sa@localhost:5432/marche_db'
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:sa@localhost:5432/marche_db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://marche_db_user:4zvWz3FKqHRanQNF7zeQ8BIaBLyBCiC9@dpg-d3r62dodl3ps73celsmg-a.oregon-postgres.render.com/marche_db'
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # JWT Configuration
