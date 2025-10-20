@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import Swal from 'sweetalert2';
 
-
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,15 +16,16 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      await login(email, password);
+      // Attempt login (your login function should return user info or save it to localStorage)
+      const user = await login(email, password);
 
+<<<<<<< HEAD
       Swal.fire({
         icon: 'success',
         title: 'Login Successful',
@@ -34,7 +34,29 @@ export const Login: React.FC = () => {
       }).then(() => {
         navigate('/Marche/');
       });
+=======
+      // ✅ Show success popup
+      // Swal.fire({
+      //   icon: 'success',
+      //   title: 'Login Successful',
+      //   text: 'Welcome back!',
+      //   confirmButtonText: 'Continue',
+      // }).then(() => {
+        // ✅ Check user info after popup confirmation
+        const storedUser = user || JSON.parse(localStorage.getItem('user') || '{}');
+
+        // ✅ Redirect based on role
+        if (storedUser?.role === 'admin') {
+          navigate('/admin');
+        } else if (storedUser?.role === 'vendor') {
+          navigate('/vendor'); // remove the `/*` from your earlier code — React Router doesn’t need it here
+        } else {
+          navigate('/'); // fallback (customer or other)
+        }
+      ;
+>>>>>>> 4531ef644db07164da7bfe1a61023780a603ded6
     } catch (err) {
+      // ❌ Show error popup if login fails
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
@@ -45,14 +67,17 @@ export const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Link to="/" className="flex items-center justify-center space-x-2 font-bold text-3xl text-emerald-600 mb-8">
+          <Link
+            to="/"
+            className="flex items-center justify-center space-x-2 font-bold text-3xl text-emerald-600 mb-8"
+          >
             <span className="text-4xl">🏪</span>
             <span>Marché</span>
           </Link>
@@ -78,7 +103,7 @@ export const Login: React.FC = () => {
               icon={<Mail className="w-5 h-5" />}
             />
 
-            <div>
+            <div className="relative">
               <Input
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
@@ -94,26 +119,31 @@ export const Login: React.FC = () => {
                 className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
                 style={{ marginTop: '32px' }}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-emerald-600 hover:text-emerald-700"
+              >
                 Forgot password?
               </Link>
             </div>
 
-            <Button
-              type="submit"
-              loading={loading}
-              className="w-full"
-              size="lg"
-            >
+            <Button type="submit" loading={loading} className="w-full" size="lg">
               Sign In
             </Button>
           </form>
@@ -121,7 +151,10 @@ export const Login: React.FC = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="text-emerald-600 hover:text-emerald-700 font-medium">
+              <Link
+                to="/register"
+                className="text-emerald-600 hover:text-emerald-700 font-medium"
+              >
                 Sign up here
               </Link>
             </p>
@@ -133,10 +166,12 @@ export const Login: React.FC = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Quick login for demo</span>
+                <span className="px-2 bg-white text-gray-500">
+                  Quick login for demo
+                </span>
               </div>
             </div>
-            
+
             <div className="mt-4 space-y-2">
               <button
                 onClick={() => {
