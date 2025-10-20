@@ -43,7 +43,6 @@ export const Login: React.FC = () => {
           navigate('/'); // fallback (customer or other)
         }
       ;
->>>>>>> 4531ef644db07164da7bfe1a61023780a603ded6
     } catch (err) {
       // ❌ Show error popup if login fails
       Swal.fire({
