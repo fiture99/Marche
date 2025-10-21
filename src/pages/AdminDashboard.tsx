@@ -463,7 +463,7 @@ const AdminDashboard: React.FC = () => {
     
     const cleanPath = imagePath.replace(/^[\\/]+/, '');
     if (process.env.NODE_ENV === 'development') {
-      return `http://localhost:5000/uploads/products/${cleanPath}`;
+      return `'https://marche-yzzm.onrender.com/uploads/products/${cleanPath}`;
     }
     return `/uploads/products/${cleanPath}`;
   }, []);

@@ -133,8 +133,8 @@ const VendorProfile: React.FC<VendorProfileProps> = ({ vendor, onUpdate }) => {
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http') || imagePath.startsWith('blob:')) return imagePath;
-    if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
-    return `http://localhost:5000/uploads/${imagePath}`;
+    if (imagePath.startsWith('/')) return `https://marche-yzzm.onrender.com${imagePath}`;
+    return `https://marche-yzzm.onrender.com/uploads/${imagePath}`;
   };
 
   if (!vendor) {

@@ -77,19 +77,19 @@ export const ProductDetail: React.FC = () => {
 
   const getImageUrl = (imagePath: string | undefined): string => {
     if (!imagePath) return '/placeholder.png';
-    if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
       return imagePath;
     }
     
     let cleanPath = imagePath.replace(/\\/g, '/');
     
-    if (cleanPath.includes('localhost:5000')) {
-      const urlParts = cleanPath.split('localhost:5000');
-      return `http://localhost:5000${urlParts[1]}`;
+    if (cleanPath.includes('marche-yzzm.onrender.com')) {
+      const urlParts = cleanPath.split('marche-yzzm.onrender.com');
+      return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
     }
     
     const filename = cleanPath.split('/').pop() || cleanPath;
-    return `http://localhost:5000/uploads/products/${filename}`;
+    return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
   };
 
   const formatPrice = (price: number) => {

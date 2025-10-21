@@ -36,11 +36,11 @@ export const Login: React.FC = () => {
 
         // ✅ Redirect based on role
         if (storedUser?.role === 'admin') {
-          navigate('/admin');
+          navigate('/Marche/admin');
         } else if (storedUser?.role === 'vendor') {
-          navigate('/vendor'); // remove the `/*` from your earlier code — React Router doesn’t need it here
+          navigate('/Marche/vendor'); // remove the `/*` from your earlier code — React Router doesn’t need it here
         } else {
-          navigate('/'); // fallback (customer or other)
+          navigate('/Marche/'); // fallback (customer or other)
         }
       ;
     } catch (err) {

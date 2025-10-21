@@ -5,11 +5,11 @@ app = create_app()
 app.app_context().push()
 
 admin = User(
-    email='admin@example.com',
+    email='admin@nyakoi-services.com',
     first_name='Admin',
     last_name='User',
     role=UserRole.ADMIN
 )
-admin.set_password('Admin123!')
+admin.set_password('Admin@$@123')
 db.session.add(admin)
 db.session.commit()

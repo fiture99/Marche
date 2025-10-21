@@ -64,7 +64,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         text: response?.info || 'Your vendor account is pending approval by admin.',
         confirmButtonText: 'Continue',
       }).then(() => {
-        navigate('/');
+        navigate('/Marche/login');
       });
     } else {
       Swal.fire({
@@ -73,7 +73,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         text: response?.message || 'Your account has been created successfully!',
         confirmButtonText: 'Continue',
       }).then(() => {
-        navigate('/');
+        navigate('/Marche/');
       });
     }
 

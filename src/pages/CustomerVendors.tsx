@@ -81,9 +81,9 @@ export const CustomerVendors: React.FC = () => {
 
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
-    return `http://localhost:5000/uploads/${imagePath}`;
+    if (imagePath.startsWith('https')) return imagePath;
+    if (imagePath.startsWith('/')) return `https://marche-yzzm.onrender.com${imagePath}`;
+    return `'https://marche-yzzm.onrender.com/uploads/${imagePath}`;
   };
 
   const getStatusBadge = (status: string) => {

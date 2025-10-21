@@ -64,7 +64,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   // Handle product card click
   const handleCardClick = () => {
     console.log('🖱️ Clicked product:', product.id, product.name);
-    navigate(`/products/${product.id}`, { 
+    navigate(`/Marche/products/${product.id}`, { 
       state: { product }
     });
   };
@@ -114,7 +114,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     e.stopPropagation();
     console.log('👀 Quick view:', product.id);
     // You can implement a modal or quick view feature here
-    navigate(`/products/${product.id}`, { 
+    navigate(`/Marche/products/${product.id}`, { 
       state: { product, quickView: true }
     });
   };
@@ -123,7 +123,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const getImageUrl = (imagePath: string | undefined): string => {
     if (!imagePath) return '/placeholder-product.jpg';
 
-    if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
       return imagePath;
     }
 
@@ -131,11 +131,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const filename = imagePath.split(/[\\/]/).pop() || imagePath;
     
     // Check if it's already a full URL
-    if (filename.includes('localhost') || filename.includes('http')) {
+    if (filename.includes('marche-yzzm.onrender.com') || filename.includes('https')) {
       return filename;
     }
     
-    return `http://localhost:5000/uploads/products/${filename}`;
+    return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
   };
 
   // Preload and handle images

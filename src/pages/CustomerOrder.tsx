@@ -122,17 +122,17 @@ const CustomerOrder: React.FC = () => {
     if (!imagePath) return '';
     
     // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) {
+    if (imagePath.startsWith('https')) {
       return imagePath;
     }
     
     // If it's a relative path, prepend your API base URL
     if (imagePath.startsWith('/')) {
-      return `http://localhost:5000${imagePath}`;
+      return `'https://marche-yzzm.onrender.com${imagePath}`;
     }
     
     // For other cases, you might need to adjust this logic
-    return `http://localhost:5000/uploads/${imagePath}`;
+    return `'https://marche-yzzm.onrender.com/uploads/${imagePath}`;
   };
 
   const fetchOrders = useCallback(async () => {
