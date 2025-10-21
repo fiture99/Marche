@@ -65,7 +65,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link 
-            to="/Marche/" 
+            to="/" 
             className="flex items-center space-x-3 group"
           >
             <div className="relative">
