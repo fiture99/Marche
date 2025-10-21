@@ -197,7 +197,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSuccess }
           timer: 3000,
         });
       }
-
+ 
       onSuccess();
     } catch (error: any) {
       console.error('Failed to save product:', error);

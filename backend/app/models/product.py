@@ -71,7 +71,7 @@ class Product(db.Model):
 
     def to_dict(self):
         """Convert product to dictionary"""
-        base_url = 'http://localhost:5000'
+        base_url = 'https://marche-yzzm.onrender.com/'
         
         # Handle image paths - convert to proper URLs
         image_urls = []
