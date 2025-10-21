@@ -43,8 +43,8 @@ const ProductList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -57,14 +57,31 @@ const ProductList: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await vendorsAPI.getMyProducts();
-      console.log("API Success Response:", data);
+      // console.log("Full API Response:", data);
       
-      // Handle different response structures
-      const productsData = data.products || data;
-      setProducts(Array.isArray(productsData) ? productsData : []);
-      setFilteredProducts(Array.isArray(productsData) ? productsData : []);
+      // Handle different possible response structures
+      let productsData = [];
+      
+      if (Array.isArray(data)) {
+        productsData = data;
+      } else if (data.products && Array.isArray(data.products)) {
+        productsData = data.products;
+      } else if (data.data && Array.isArray(data.data)) {
+        productsData = data.data;
+      } else if (data.items && Array.isArray(data.items)) {
+        productsData = data.items;
+      } else if (data.results && Array.isArray(data.results)) {
+        productsData = data.results;
+      } else {
+        console.warn("Unexpected API response structure:", data);
+        productsData = [];
+      }
+      
+      // console.log("Extracted products:", productsData);
+      setProducts(productsData);
+      setFilteredProducts(productsData);
     } catch (err) {
-      console.error(err);
+      console.error("API Error:", err);
       setError("Failed to fetch products. Please try again later.");
       toast.error("Failed to load products");
     } finally {
@@ -114,6 +131,10 @@ const ProductList: React.FC = () => {
         return sortOrder === "asc" ? a.price - b.price : b.price - a.price;
       } else if (sortBy === "stock") {
         return sortOrder === "asc" ? a.stock - b.stock : b.stock - a.stock;
+      } else if (sortBy === "created_at") {
+        return sortOrder === "asc" 
+          ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
       return 0;
     });
@@ -134,8 +155,8 @@ const ProductList: React.FC = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setCategoryFilter("all");
-    setSortBy("name");
-    setSortOrder("asc");
+    setSortBy("created_at");
+    setSortOrder("desc");
   };
 
   const handleEditProduct = (product: Product) => {
@@ -336,6 +357,8 @@ const ProductList: React.FC = () => {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
+                <option value="created_at-desc">Latest First</option>
+                <option value="created_at-asc">Oldest First</option>
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
                 <option value="price-asc">Price (Low to High)</option>

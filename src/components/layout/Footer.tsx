@@ -34,22 +34,22 @@ export const Footer: React.FC = () => {
             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/shop" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/shop" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Shop
                 </Link>
               </li>
               <li>
-                <Link to="/vendors" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/vendors" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Vendors
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/about" className="text-gray-300 hover:text-white transition-colors duration-200">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/contact" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Contact
                 </Link>
               </li>
@@ -61,12 +61,12 @@ export const Footer: React.FC = () => {
             <h3 className="font-semibold text-lg mb-4">For Vendors</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/vendor/apply" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/register" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Become a Vendor
                 </Link>
               </li>
               <li>
-                <Link to="/vendor/login" className="text-gray-300 hover:text-white transition-colors duration-200">
+                <Link to="/Marche/login" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Vendor Login
                 </Link>
               </li>
@@ -105,10 +105,8 @@ export const Footer: React.FC = () => {
             <div className="mt-6">
               <h4 className="font-medium mb-3">Payment Methods</h4>
               <div className="flex flex-wrap gap-2 text-sm text-gray-300">
-                <span className="bg-gray-800 px-2 py-1 rounded">QCell Money</span>
-                <span className="bg-gray-800 px-2 py-1 rounded">Africell Money</span>
-                <span className="bg-gray-800 px-2 py-1 rounded">GamPay</span>
-                <span className="bg-gray-800 px-2 py-1 rounded">Visa</span>
+                <span className="bg-gray-800 px-2 py-1 rounded">Wave Money</span>
+                <span className="bg-gray-800 px-2 py-1 rounded">Bank Account Transfer</span>
               </div>
             </div>
           </div>
@@ -117,7 +115,7 @@ export const Footer: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2024 Marché. All rights reserved.
+              © 2025 Nyakoi Services. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link to="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors duration-200">

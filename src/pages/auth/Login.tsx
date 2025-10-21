@@ -140,7 +140,7 @@ export const Login: React.FC = () => {
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link
-                to="/register"
+                to="/Marche/register"
                 className="text-emerald-600 hover:text-emerald-700 font-medium"
               >
                 Sign up here
@@ -148,7 +148,7 @@ export const Login: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
@@ -189,7 +189,7 @@ export const Login: React.FC = () => {
                 ⚙️ Admin Account
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

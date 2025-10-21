@@ -164,7 +164,7 @@ export const CartDrawer: React.FC = () => {
                 
                 <div className="space-y-2">
                   {isAuthenticated ? (
-                    <Link to="/checkout" onClick={toggleCart}>
+                    <Link to="/Marche/checkout" onClick={toggleCart}>
                       <Button className="w-full" size="lg" disabled={loading}>
                         {loading ? 'Processing...' : 'Proceed to Checkout'}
                       </Button>
