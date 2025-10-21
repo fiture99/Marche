@@ -1,344 +1,256 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import {
-  XMarkIcon,
-  CheckIcon,
-  XCircleIcon,
-  UserIcon,
-  BuildingStorefrontIcon,
-  MapPinIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  DocumentIcon,
-} from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
+// src/components/admin/VendorApplicationModal.tsx
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface VendorApplication {
   id: number;
+  user_id: number;
   name: string;
   email: string;
   phone: string;
-  businessName: string;
-  businessDescription: string;
-  category: string;
-  location: string;
-  status: 'pending' | 'approved' | 'rejected';
-  appliedDate: string;
-  documents?: string[];
+  description: string;
+  address: string;
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  created_at: string;
+  updated_at: string;
 }
 
 interface VendorApplicationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   application: VendorApplication | null;
-  onApprove: (id: number) => void;
-  onReject: (id: number, reason: string) => void;
+  onClose: () => void;
+  onApprove: () => void;
+  onReject: (reason: string) => void;
 }
 
 const VendorApplicationModal: React.FC<VendorApplicationModalProps> = ({
-  isOpen,
-  onClose,
   application,
+  onClose,
   onApprove,
-  onReject,
+  onReject
 }) => {
-  const [rejectReason, setRejectReason] = useState('');
-  const [showRejectForm, setShowRejectForm] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // Reset reject form whenever modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setRejectReason('');
-      setShowRejectForm(false);
-    }
-  }, [isOpen]);
-
-  const handleApprove = async () => {
-    if (!application) return;
-    setLoading(true);
-    try {
-      await onApprove(application.id);
-      onClose();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!application || !rejectReason.trim()) return;
-    setLoading(true);
-    try {
-      await onReject(application.id, rejectReason);
-      onClose();
-    } finally {
-      setLoading(false);
-      setRejectReason('');
-      setShowRejectForm(false);
-    }
-  };
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectInput, setShowRejectInput] = useState(false);
 
   if (!application) return null;
 
+  const handleReject = () => {
+    if (showRejectInput) {
+      if (!rejectionReason.trim()) {
+        alert('Please provide a reason for rejection');
+        return;
+      }
+      onReject(rejectionReason);
+      setShowRejectInput(false);
+      setRejectionReason('');
+    } else {
+      setShowRejectInput(true);
+    }
+  };
+
+  const handleApprove = () => {
+    const confirmed = window.confirm('Are you sure you want to approve this vendor application?');
+    if (confirmed) {
+      onApprove();
+    }
+  };
+
+  const cancelReject = () => {
+    setShowRejectInput(false);
+    setRejectionReason('');
+  };
+
   return (
-    <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </Transition.Child>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          {/* Background overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+            onClick={onClose}
+          />
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <Dialog.Panel
-                className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6"
-                aria-modal="true"
+          {/* Modal panel */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="relative inline-block w-full max-w-2xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:p-6"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Vendor Application Details
+              </h3>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-                  <button
-                    type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500"
-                    onClick={onClose}
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Application Details */}
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
+                    {application.name}
+                  </p>
                 </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
+                  </label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
+                    {application.email}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
+                    {application.phone}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Application Status
+                  </label>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {application.status.toUpperCase()}
+                  </span>
+                </div>
+              </div>
 
-                <div className="sm:flex sm:items-start">
-                  <div className="w-full">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-semibold leading-6 text-gray-900 mb-6"
+              {/* Address */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Business Address
+                </label>
+                <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border min-h-[60px]">
+                  {application.address || 'No address provided'}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Business Description
+                </label>
+                <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border min-h-[100px]">
+                  {application.description || 'No description provided'}
+                </p>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Application Date
+                  </label>
+                  <p className="text-sm text-gray-600">
+                    {new Date(application.created_at).toLocaleDateString()} at{' '}
+                    {new Date(application.created_at).toLocaleTimeString()}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Updated
+                  </label>
+                  <p className="text-sm text-gray-600">
+                    {new Date(application.updated_at).toLocaleDateString()} at{' '}
+                    {new Date(application.updated_at).toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Rejection Reason Input */}
+              {showRejectInput && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reason for Rejection
+                  </label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="Please provide a reason for rejecting this application..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={handleReject}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
                     >
-                      Vendor Application Review
-                    </Dialog.Title>
-
-                    <div className="space-y-6">
-                      {/* Personal Information */}
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                          <UserIcon className="w-5 h-5 mr-2" />
-                          Personal Information
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Full Name
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900">{application.name}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Email
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 flex items-center">
-                              <EnvelopeIcon className="w-4 h-4 mr-1" />
-                              {application.email}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Phone
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 flex items-center">
-                              <PhoneIcon className="w-4 h-4 mr-1" />
-                              {application.phone}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Location
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 flex items-center">
-                              <MapPinIcon className="w-4 h-4 mr-1" />
-                              <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                  application.location
-                                )}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                {application.location}
-                              </a>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Business Information */}
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                          <BuildingStorefrontIcon className="w-5 h-5 mr-2" />
-                          Business Information
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Business Name
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900">{application.businessName}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Category
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900">{application.category}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Business Description
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900">{application.businessDescription}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Documents */}
-                      {application.documents?.length > 0 && (
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                            <DocumentIcon className="w-5 h-5 mr-2" />
-                            Documents
-                          </h4>
-                          <ul className="list-disc list-inside text-sm text-gray-900">
-                            {application.documents.map((doc, idx) => (
-                              <li key={idx}>
-                                <a
-                                  href={doc}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline"
-                                >
-                                  Document {idx + 1}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Application Details */}
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3">Application Details</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Applied Date
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {new Date(application.appliedDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Status
-                            </label>
-                            <span
-                              className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                application.status === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : application.status === 'approved'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Reject Form */}
-                      {showRejectForm && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="bg-red-50 p-4 rounded-lg border border-red-200"
-                        >
-                          <label className="block text-sm font-medium text-red-700 mb-2">
-                            Rejection Reason
-                          </label>
-                          <textarea
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                            placeholder="Please provide a reason for rejection..."
-                          />
-                        </motion.div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    {application.status === 'pending' && (
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                        {!showRejectForm ? (
-                          <>
-                            <button
-                              onClick={handleApprove}
-                              disabled={loading}
-                              className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <CheckIcon className="w-4 h-4 mr-2" />
-                              {loading ? 'Approving...' : 'Approve Application'}
-                            </button>
-                            <button
-                              onClick={() => setShowRejectForm(true)}
-                              className="flex items-center justify-center px-4 py-2 border border-red-300 text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                            >
-                              <XCircleIcon className="w-4 h-4 mr-2" />
-                              Reject Application
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={handleReject}
-                              disabled={loading || !rejectReason.trim()}
-                              className="flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <XCircleIcon className="w-4 h-4 mr-2" />
-                              {loading ? 'Rejecting...' : 'Confirm Rejection'}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowRejectForm(false);
-                                setRejectReason('');
-                              }}
-                              className="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
+                      Confirm Reject
+                    </button>
+                    <button
+                      onClick={cancelReject}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            {application.status === 'pending' && !showRejectInput && (
+              <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleApprove}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  Approve Application
+                </button>
+                <button
+                  onClick={handleReject}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                >
+                  Reject Application
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+
+            {application.status !== 'pending' && (
+              <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </motion.div>
         </div>
-      </Dialog>
-    </Transition.Root>
+      </div>
+    </AnimatePresence>
   );
 };
 

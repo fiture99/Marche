@@ -581,6 +581,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleViewApplication = (application: VendorApplication) => {
+    console.log('Viewing application:', application);
     setSelectedApplication(application);
     setShowApplicationModal(true);
   };
@@ -780,6 +781,7 @@ const AdminDashboard: React.FC = () => {
                               <button 
                                 onClick={() => handleViewApplication(app)} 
                                 className="text-blue-600 hover:text-blue-900 ml-2"
+                                title="View Application Details"
                               >
                                 <EyeIcon className="w-4 h-4" />
                               </button>
@@ -1413,19 +1415,33 @@ const AdminDashboard: React.FC = () => {
               </div>
             </motion.div>
           )}
-          
-          {/* Vendor Application Modal */}
-          {selectedApplication && (
-            <VendorApplicationModal
-              application={selectedApplication}
-              onClose={() => setShowApplicationModal(false)}
-              onApprove={() => handleApplicationAction(selectedApplication.id, 'approve')}
-              onReject={(reason) => handleApplicationAction(selectedApplication.id, 'reject', reason)}
-            />
-          )}
-
         </div>
       </div>
+
+      {/* Vendor Application Modal - MOVED OUTSIDE THE MAIN CONTENT DIV */}
+      {showApplicationModal && (
+        <VendorApplicationModal
+          application={selectedApplication}
+          onClose={() => {
+            setShowApplicationModal(false);
+            setSelectedApplication(null);
+          }}
+          onApprove={() => {
+            if (selectedApplication) {
+              handleApplicationAction(selectedApplication.id, 'approve');
+              setShowApplicationModal(false);
+              setSelectedApplication(null);
+            }
+          }}
+          onReject={(reason) => {
+            if (selectedApplication) {
+              handleApplicationAction(selectedApplication.id, 'reject', reason);
+              setShowApplicationModal(false);
+              setSelectedApplication(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
