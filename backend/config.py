@@ -42,17 +42,16 @@ class DevelopmentConfig(Config):
         'http://localhost:8000',
         'http://127.0.0.1:8000',
         'https://fiture99.github.io',
-        'https://fiture99.github.io/Marche',
-        'http://192.168.0.111:5000',
+        'https://marche-1.onrender.com',
+        'https://marche-yzzm.onrender.com'
     ]
 
 class ProductionConfig(Config):
     DEBUG = False
     # Update with your production domain
     CORS_ORIGINS = [
-        'https://fiture99.github.io',
-        'https://fiture99.github.io/Marche',
-        'http://192.168.0.111:5000'
+        'https://marche-1.onrender.com',
+        'https://marche-yzzm.onrender.com'
     ]
 
 class TestingConfig(Config):
