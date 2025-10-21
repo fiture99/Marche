@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: '/Marche/', // <-- Add this for GitHub Pages
+  base: '/', // <-- Add this for GitHub Pages
   //  base: '/',
   plugins: [react()],
   server: {
