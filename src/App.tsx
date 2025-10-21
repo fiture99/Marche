@@ -26,7 +26,7 @@ function App() {
             <Header />
             <main className="flex-1">
               <Routes>
-                <Route path="/Marche/" element={<Home />} />
+                <Route path="/" element={<Home />} />
                 <Route path="/Marche/shop" element={<Shop />} />
                 <Route path="/Marche/products/:id" element={<ProductDetail />} />
                 <Route path="/Marche/vendors" element={<CustomerVendors />} />
