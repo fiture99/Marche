@@ -25,10 +25,8 @@ class Config:
         'http://localhost:5173', 
         'http://localhost:3000',
         'http://127.0.0.1:5173',
-        'http://192.168.0.111:5000',
         'http://127.0.0.1:3000',
-        'https://fiture99.github.io',
-        'https://fiture99.github.io/Marche'
+        'https://marche-1.onrender.com',
     ]
     
     # Pagination
