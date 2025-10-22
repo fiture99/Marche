@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
 // import logo from '../../images/logo.png'; // PNG version
 
-import logo from '/src/images/logo.png';
+import logo from '../../images/Logo.png';
 
 
 
