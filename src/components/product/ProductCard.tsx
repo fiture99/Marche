@@ -105,7 +105,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const handleLoginRedirect = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate('/login', { state: { returnUrl: window.location.pathname } });
+    navigate('/Marche/login', { state: { returnUrl: window.location.pathname } });
   };
 
   // Handle quick view
