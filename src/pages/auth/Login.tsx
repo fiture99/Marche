@@ -40,7 +40,7 @@ export const Login: React.FC = () => {
         } else if (storedUser?.role === 'vendor') {
           navigate('/Marche/vendor'); // remove the `/*` from your earlier code — React Router doesn’t need it here
         } else {
-          navigate('/Marche/'); // fallback (customer or other)
+          navigate('/'); // fallback (customer or other)
         }
       ;
     } catch (err) {
@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
               required
               icon={<Mail className="w-5 h-5" />}
             />
-              
+
                           <div className="relative">
                 <Input
                   label="Password"
