@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/Button';
 
 // Import your logo image - adjust the path according to your project structure
-import logo from '../../images/logo.png'; // PNG version
+import logo from '/src/images/logo.png'; // PNG version
 // or
 
 export const Header: React.FC = () => {
