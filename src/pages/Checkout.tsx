@@ -89,12 +89,12 @@ export const Checkout: React.FC = () => {
       expiresAt: expiresAt.toISOString(),
       paymentOptions: {
         wave: {
-          number: '+220 123 4567',
+          number: '+220 3167094',
           accountName: 'Marché Business'
         },
         trustBank: {
-          accountNumber: '11212212201',
-          accountName: 'Marché Enterprises',
+          accountNumber: '11413872104',
+          accountName: 'Lamin Jawneh',
           branch: 'Banjul Main Branch'
         }
       }
