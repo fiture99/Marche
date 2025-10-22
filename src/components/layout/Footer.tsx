@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
-import logo from '/assets/logo.png'; // PNG version
+// import logo from '../../images/logo.png'; // PNG version
 
 
 export const Footer: React.FC = () => {
