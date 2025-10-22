@@ -5,6 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/Button';
 
+// Import your logo image - adjust the path according to your project structure
+import logo from '../../images/logo.png'; // PNG version
+// or
+
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const { itemCount, toggleCart } = useCart();
@@ -62,27 +66,36 @@ export const Header: React.FC = () => {
         : 'bg-white shadow-sm border-b border-gray-100'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-18">
+          {/* Logo with Image */}
           <Link 
             to="/" 
             className="flex items-center space-x-3 group"
           >
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg group-hover:shadow-emerald-500/25 transition-all duration-300 group-hover:scale-105">
-                🏪
-              </div>
+              {/* Image Logo */}
+              <img 
+                src={logo} 
+                alt="Marché - Your Local Market"
+                className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  // You can add a fallback element here if needed
+                }}
+              />
               <div className="absolute -inset-1 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </div>
-            <div className="hidden sm:block">
+            {/* <div className="hidden sm:block">
               <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
                 Marché
               </span>
               <div className="text-xs text-gray-500 -mt-1">Your Local Market</div>
-            </div>
+            </div> */}
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Rest of your header code remains the same */}
           <div className="hidden md:flex items-center space-x-1">
             {/* Search - Shows input when clicked */}
             <div className="relative">
@@ -249,12 +262,27 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-emerald-50"
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="md:hidden flex items-center space-x-1">
+            {/* Mobile Cart Button - Visible outside menu */}
+            <button
+              onClick={toggleCart}
+              className="relative p-2 text-gray-600 hover:text-emerald-600 transition-all duration-200 rounded-lg hover:bg-emerald-50"
+            >
+              <ShoppingCart className="w-6 h-6" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg animate-pulse">
+                  {itemCount > 9 ? '9+' : itemCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-emerald-50"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -284,6 +312,30 @@ export const Header: React.FC = () => {
                   </button>
                 )}
               </form>
+              
+              {/* Mobile Cart Button - Inside menu for easy access */}
+              {/* <button
+                onClick={() => {
+                  toggleCart();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
+              >
+                <div className="relative">
+                  <ShoppingCart className="w-5 h-5 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                  {itemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium text-[10px]">
+                      {itemCount > 9 ? '9+' : itemCount}
+                    </span>
+                  )}
+                </div>
+                Shopping Cart
+                {itemCount > 0 && (
+                  <span className="ml-auto bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full font-medium">
+                    {itemCount} item{itemCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </button> */}
               
               <Link
                 to="/Marche/shop"
@@ -333,6 +385,16 @@ export const Header: React.FC = () => {
                     >
                       <Store className="w-5 h-5 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
                       Dashboard
+                    </Link>
+                  )}
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/Marche/admin"
+                      className="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings className="w-5 h-5 mr-3 text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                      Admin Panel
                     </Link>
                   )}
                   <div className="border-t border-gray-100 mt-2 pt-2">

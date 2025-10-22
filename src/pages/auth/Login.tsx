@@ -90,8 +90,32 @@ export const Login: React.FC = () => {
               required
               icon={<Mail className="w-5 h-5" />}
             />
+              
+                          <div className="relative">
+                <Input
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  icon={<Lock className="w-5 h-5" />}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-12 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
 
-            <div className="relative">
+            {/* <div className="relative">
               <Input
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
@@ -113,7 +137,7 @@ export const Login: React.FC = () => {
                   <Eye className="w-5 h-5" />
                 )}
               </button>
-            </div>
+            </div> */}
 
             <div className="flex items-center justify-between">
               <label className="flex items-center">

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
+import logo from '../../images/logo.png'; // PNG version
+
 
 export const Footer: React.FC = () => {
   return (
@@ -9,9 +11,24 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center space-x-2 font-bold text-2xl mb-4">
+            {/* <div className="flex items-center space-x-2 font-bold text-2xl mb-4">
               <span className="text-3xl">🏪</span>
               <span>Marché</span>
+            </div> */}
+            <div className="relative">
+              {/* Image Logo */}
+              <img 
+                src={logo} 
+                alt="Marché - Your Local Market"
+                className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  // You can add a fallback element here if needed
+                }}
+              />
+              <div className="absolute -inset-1 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </div>
             <p className="text-gray-300 mb-6">
               The Gambia's premier multi-vendor marketplace. Connect with local businesses and discover amazing products.

@@ -164,7 +164,29 @@ const handleSubmit = async (e: React.FormEvent) => {
               icon={<Mail className="w-5 h-5" />}
             />
 
-            <div className="relative">
+            {/* Password Field */}
+              <div className="relative">
+                <Input
+                  label="Password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Create a strong password"
+                  required
+                  icon={<Lock className="w-5 h-5" />}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-[60%] text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+            {/* <div className="relative">
               <Input
                 label="Password"
                 name="password"
@@ -183,7 +205,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
-            </div>
+            </div> */}
 
             <Input
               label="Confirm Password"
