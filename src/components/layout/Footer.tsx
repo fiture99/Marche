@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
             <div className="relative">
               {/* Image Logo */}
               <img 
-                src={logo} 
+                src="/src/images/logo.png" 
                 alt="Marché - Your Local Market"
                 className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
