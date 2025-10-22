@@ -66,7 +66,7 @@ export const Header: React.FC = () => {
         : 'bg-white shadow-sm border-b border-gray-100'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18">
+        <div className="flex items-center justify-between h-16">
           {/* Logo with Image */}
           <Link 
             to="/" 
@@ -77,7 +77,7 @@ export const Header: React.FC = () => {
               <img 
                 src={logo}
                 alt="Marché - Your Local Market"
-                className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
+                className="w-20 h-16 object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   // Fallback if image fails to load
                   const target = e.target as HTMLImageElement;
