@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
 // import logo from '../../images/logo.png'; // PNG version
 
+import logo from '../../images/logo.png';
+
+
 
 export const Footer: React.FC = () => {
   return (
@@ -18,7 +21,7 @@ export const Footer: React.FC = () => {
             <div className="relative">
               {/* Image Logo */}
               <img 
-                src="/src/images/logo.png" 
+                src={logo} 
                 alt="Marché - Your Local Market"
                 className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {

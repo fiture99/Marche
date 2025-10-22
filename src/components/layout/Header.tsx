@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/Button';
 
 // Import your logo image - adjust the path according to your project structure
-// import logo from '../../images/logo.png'; // PNG version
+import logo from '../../images/logo.png'; // PNG version
 // or
 
 export const Header: React.FC = () => {
@@ -75,7 +75,7 @@ export const Header: React.FC = () => {
             <div className="relative">
               {/* Image Logo */}
               <img 
-                src="/src/images/logo.png" 
+                src={logo}
                 alt="Marché - Your Local Market"
                 className="w-20 h-18 object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
