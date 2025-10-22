@@ -279,7 +279,14 @@ const ProductList: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-600">Manage your product catalog</p>
+            {/* <p className="text-gray-600">Manage your product catalog</p> */}
+            <p className="text-gray-600 mb-4">
+              Manage your product catalog
+              <div className="mt-2 flex items-center text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                <span className="mr-2">💡</span>
+                Note: 1% commission applies to all sales
+              </div>
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-sm text-gray-500">

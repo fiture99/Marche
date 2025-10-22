@@ -331,7 +331,7 @@ export const ProductDetails: React.FC = () => {
                   <Truck className="w-6 h-6 text-emerald-600" />
                   <div>
                     <p className="font-semibold">Free Shipping</p>
-                    <p className="text-sm text-gray-500">On orders over GMD 500</p>
+                    <p className="text-sm text-gray-500">On orders over GMD 50,000</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
