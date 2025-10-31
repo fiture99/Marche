@@ -401,38 +401,56 @@ def create_vendor_product():
                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
             }
             
+            print(f"🔍 Processed form data: {data}")
+            
             # Handle image upload to Google Drive
             if 'images' in request.files:
                 image_files = request.files.getlist('images')
-                for image_file in image_files:
+                print(f"🔍 Found {len(image_files)} image files")
+                
+                for i, image_file in enumerate(image_files):
+                    print(f"🔍 Processing image {i+1}: {image_file.filename}")
+                    
                     if image_file and image_file.filename != '' and allowed_file(image_file.filename):
                         try:
+                            print(f"🔍 Attempting to upload {image_file.filename} to Google Drive...")
                             # Upload to Google Drive
                             upload_result = drive_service.upload_image(image_file)
                             uploaded_images.append(upload_result['direct_url'])
                             print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
                         except Exception as upload_error:
-                            print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
+                            print(f"❌ Failed to upload image {image_file.filename} to Google Drive: {str(upload_error)}")
                             # Continue with other images even if one fails
                             continue
+                    else:
+                        print(f"⚠️ Skipping invalid image file: {image_file.filename}")
             
             # If single image field is used (backward compatibility)
             elif 'image' in request.files:
                 image_file = request.files['image']
+                print(f"🔍 Processing single image: {image_file.filename}")
+                
                 if image_file and image_file.filename != '' and allowed_file(image_file.filename):
                     try:
+                        print(f"🔍 Attempting to upload single image to Google Drive...")
                         upload_result = drive_service.upload_image(image_file)
                         uploaded_images.append(upload_result['direct_url'])
                         print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
                     except Exception as upload_error:
-                        print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
+                        print(f"❌ Failed to upload single image to Google Drive: {str(upload_error)}")
+                else:
+                    print(f"⚠️ Invalid single image file: {image_file.filename}")
+            else:
+                print("⚠️ No image files found in request")
                         
         elif request.is_json:
             # JSON data handling
             data = request.get_json()
+            print(f"🔍 JSON data received: {data}")
             # If images are provided as URLs in JSON, use them directly
             if 'images' in data:
                 uploaded_images = data['images'] if isinstance(data['images'], list) else [data['images']]
+                print(f"🔍 Using images from JSON: {uploaded_images}")
         else:
             return jsonify({'error': 'Unsupported content type'}), 400
         
@@ -446,6 +464,9 @@ def create_vendor_product():
         category = Category.query.filter_by(name=data['category']).first()
         if not category:
             return jsonify({'error': f'Category "{data["category"]}" not found'}), 404
+        
+        print(f"🔍 Creating product with data: {data}")
+        print(f"🔍 Images to be saved: {uploaded_images}")
         
         # Create product
         product = Product(
@@ -462,6 +483,8 @@ def create_vendor_product():
         if uploaded_images:
             product.image_list = uploaded_images
             print(f"📸 Product images set: {uploaded_images}")
+        else:
+            print("⚠️ No images were uploaded, product will have no images")
         
         db.session.add(product)
         db.session.commit()
@@ -474,8 +497,9 @@ def create_vendor_product():
     except Exception as e:
         db.session.rollback()
         print(f"❌ Error creating product: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
-
 
 
 # @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
@@ -697,7 +721,7 @@ def upload_image():
             'success': False,
             'error': str(e)
         }), 500
-        
+
 @vendors_bp.route('/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_vendor_product(product_id):
