@@ -6,6 +6,8 @@ from app.models.vendor import Vendor, VendorStatus
 from app.models.product import Product
 from app.models.order import Order
 from app.models.category import Category  # ✅ Add this line
+from app.services.google_drive_service import GoogleDriveService  # Add this import
+
 
 from marshmallow import Schema, fields, ValidationError
 from sqlalchemy import or_
@@ -14,6 +16,8 @@ from werkzeug.utils import secure_filename
 from decimal import Decimal
 
 vendors_bp = Blueprint('vendors', __name__)
+drive_service = GoogleDriveService()  # Initialize Google Drive service
+
 
 # Allowed file extensions for images
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -283,6 +287,90 @@ def get_vendor_products():
 import logging
 
 # app/routes/vendors.py
+# @vendors_bp.route('/products', methods=['POST'])
+# @jwt_required()
+# def create_vendor_product():
+#     print(f"📨 Request Content-Type: {request.content_type}")
+#     print(f"📨 Is JSON: {request.is_json}")
+#     print(f"📨 Form data: {dict(request.form)}")
+#     print(f"📨 Files: {dict(request.files)}")
+#     try:
+#         user_id = get_jwt_identity()
+#         vendor = Vendor.query.filter_by(user_id=user_id).first()
+        
+#         if not vendor or vendor.status != VendorStatus.APPROVED:
+#             return jsonify({'error': 'Only approved vendors can create products'}), 403
+        
+#         data = {}
+        
+#         # Handle both form data and JSON
+#         if request.content_type and 'multipart/form-data' in request.content_type:
+#             # Form data handling
+#             data = {
+#                 'name': request.form.get('name'),
+#                 'price': request.form.get('price'),
+#                 'stock': request.form.get('stock'),
+#                 'description': request.form.get('description'),
+#                 'category': request.form.get('category'),
+#                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
+#             }
+            
+#             # Handle image upload
+#             if 'image' in request.files:
+#                 image_file = request.files['image']
+#                 if image_file and image_file.filename != '':
+#                     filename = secure_filename(image_file.filename)
+#                     # Save file and get path
+#                     image_path = os.path.join('uploads', 'products', filename)
+#                     os.makedirs(os.path.dirname(image_path), exist_ok=True)
+#                     image_file.save(image_path)
+#                     data['image'] = f'/static/{image_path}'
+                    
+#         elif request.is_json:
+#             # JSON data handling
+#             data = request.get_json()
+#         else:
+#             return jsonify({'error': 'Unsupported content type'}), 400
+        
+#         # Validate required fields
+#         required_fields = ['name', 'price', 'stock', 'description', 'category']
+#         for field in required_fields:
+#             if not data.get(field):
+#                 return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+#         # Find category by name
+#         category = Category.query.filter_by(name=data['category']).first()
+#         if not category:
+#             return jsonify({'error': f'Category "{data["category"]}" not found'}), 404
+        
+#         # Create product
+#         product = Product(
+#             vendor_id=vendor.id,
+#             category_id=category.id,
+#             name=data['name'],
+#             description=data['description'],
+#             price=float(data['price']),
+#             stock=int(data['stock']),
+#             is_active=data.get('is_active', True)
+#         )
+        
+#         if data.get('image'):
+#             product.image_list = [data['image']]
+        
+#         db.session.add(product)
+#         db.session.commit()
+        
+#         return jsonify({
+#             'message': 'Product created successfully',
+#             'product': product.to_dict()
+#         }), 201
+            
+#     except Exception as e:
+#         db.session.rollback()
+#         print(f"Error creating product: {str(e)}")
+#         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
+
+
 @vendors_bp.route('/products', methods=['POST'])
 @jwt_required()
 def create_vendor_product():
@@ -290,6 +378,7 @@ def create_vendor_product():
     print(f"📨 Is JSON: {request.is_json}")
     print(f"📨 Form data: {dict(request.form)}")
     print(f"📨 Files: {dict(request.files)}")
+    
     try:
         user_id = get_jwt_identity()
         vendor = Vendor.query.filter_by(user_id=user_id).first()
@@ -298,6 +387,7 @@ def create_vendor_product():
             return jsonify({'error': 'Only approved vendors can create products'}), 403
         
         data = {}
+        uploaded_images = []
         
         # Handle both form data and JSON
         if request.content_type and 'multipart/form-data' in request.content_type:
@@ -311,20 +401,38 @@ def create_vendor_product():
                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
             }
             
-            # Handle image upload
-            if 'image' in request.files:
+            # Handle image upload to Google Drive
+            if 'images' in request.files:
+                image_files = request.files.getlist('images')
+                for image_file in image_files:
+                    if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+                        try:
+                            # Upload to Google Drive
+                            upload_result = drive_service.upload_image(image_file)
+                            uploaded_images.append(upload_result['direct_url'])
+                            print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
+                        except Exception as upload_error:
+                            print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
+                            # Continue with other images even if one fails
+                            continue
+            
+            # If single image field is used (backward compatibility)
+            elif 'image' in request.files:
                 image_file = request.files['image']
-                if image_file and image_file.filename != '':
-                    filename = secure_filename(image_file.filename)
-                    # Save file and get path
-                    image_path = os.path.join('uploads', 'products', filename)
-                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-                    image_file.save(image_path)
-                    data['image'] = f'/static/{image_path}'
-                    
+                if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+                    try:
+                        upload_result = drive_service.upload_image(image_file)
+                        uploaded_images.append(upload_result['direct_url'])
+                        print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
+                    except Exception as upload_error:
+                        print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
+                        
         elif request.is_json:
             # JSON data handling
             data = request.get_json()
+            # If images are provided as URLs in JSON, use them directly
+            if 'images' in data:
+                uploaded_images = data['images'] if isinstance(data['images'], list) else [data['images']]
         else:
             return jsonify({'error': 'Unsupported content type'}), 400
         
@@ -350,8 +458,10 @@ def create_vendor_product():
             is_active=data.get('is_active', True)
         )
         
-        if data.get('image'):
-            product.image_list = [data['image']]
+        # Set images from Google Drive
+        if uploaded_images:
+            product.image_list = uploaded_images
+            print(f"📸 Product images set: {uploaded_images}")
         
         db.session.add(product)
         db.session.commit()
@@ -363,15 +473,100 @@ def create_vendor_product():
             
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating product: {str(e)}")
+        print(f"❌ Error creating product: {str(e)}")
         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
 
 
 
+# @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
+# @jwt_required()
+# def update_vendor_product(product_id):
+#     """Update a product for the current vendor"""
+#     user_id = get_jwt_identity()
+#     vendor = Vendor.query.filter_by(user_id=user_id).first()
+    
+#     if not vendor:
+#         return jsonify({'error': 'Vendor profile not found'}), 404
+    
+#     if vendor.status != VendorStatus.APPROVED:
+#         return jsonify({'error': 'Vendor not approved'}), 403
+    
+#     product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
+#     if not product:
+#         return jsonify({'error': 'Product not found or access denied'}), 404
+    
+#     # Handle form data or JSON
+#     if request.content_type.startswith('multipart/form-data'):
+#         data = {}
+#         for key in request.form:
+#             data[key] = request.form.get(key)
+        
+#         # Handle image upload
+#         if 'images' in request.files:
+#             image_files = request.files.getlist('images')
+#             image_paths = []
+#             for image_file in image_files:
+#                 if image_file and allowed_file(image_file.filename):
+#                     filename = secure_filename(image_file.filename)
+#                     image_path = os.path.join('uploads', 'products', filename)
+#                     os.makedirs(os.path.dirname(image_path), exist_ok=True)
+#                     image_file.save(image_path)
+#                     image_paths.append(f'/static/{image_path}')
+            
+#             if image_paths:
+#                 # Convert list to JSON string or handle based on your DB structure
+#                 data['images'] = json.dumps(image_paths)
+#     else:
+#         data = request.get_json()
+    
+#     try:
+#         # Update product fields
+#         if 'name' in data:
+#             product.name = data['name']
+#         if 'description' in data:
+#             product.description = data['description']
+#         if 'price' in data:
+#             product.price = Decimal(str(data['price']))
+#         if 'stock' in data:
+#             product.stock = int(data['stock'])
+#         if 'category' in data:
+#             # FIX: Find the Category instance by name, don't assign string directly
+#             category_name = data['category']
+#             category = Category.query.filter_by(name=category_name).first()
+#             if category:
+#                 product.category_id = category.id  # Assign the foreign key ID
+#             else:
+#                 return jsonify({'error': f'Category "{category_name}" not found'}), 400
+#         if 'is_active' in data:
+#             product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
+#         if 'images' in data:
+#             # Handle images based on your database structure
+#             # If images is stored as JSON string, parse it
+#             if isinstance(data['images'], str):
+#                 try:
+#                     product.images = json.loads(data['images'])
+#                 except json.JSONDecodeError:
+#                     product.images = [data['images']]
+#             else:
+#                 product.images = data['images']
+        
+#         db.session.commit()
+        
+#         return jsonify({
+#             'message': 'Product updated successfully',
+#             'product': product.to_dict()
+#         }), 200
+        
+#     except Exception as e:
+#         db.session.rollback()
+#         import traceback
+#         traceback.print_exc()  # This will help with debugging
+#         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
+
 @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def update_vendor_product(product_id):
-    """Update a product for the current vendor"""
+    """Update a product for the current vendor with Google Drive support"""
     user_id = get_jwt_identity()
     vendor = Vendor.query.filter_by(user_id=user_id).first()
     
@@ -385,60 +580,68 @@ def update_vendor_product(product_id):
     if not product:
         return jsonify({'error': 'Product not found or access denied'}), 404
     
-    # Handle form data or JSON
-    if request.content_type.startswith('multipart/form-data'):
-        data = {}
-        for key in request.form:
-            data[key] = request.form.get(key)
-        
-        # Handle image upload
-        if 'images' in request.files:
-            image_files = request.files.getlist('images')
-            image_paths = []
-            for image_file in image_files:
-                if image_file and allowed_file(image_file.filename):
-                    filename = secure_filename(image_file.filename)
-                    image_path = os.path.join('uploads', 'products', filename)
-                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-                    image_file.save(image_path)
-                    image_paths.append(f'/static/{image_path}')
-            
-            if image_paths:
-                # Convert list to JSON string or handle based on your DB structure
-                data['images'] = json.dumps(image_paths)
-    else:
-        data = request.get_json()
-    
     try:
+        data = {}
+        new_images = []
+        current_images = product.image_list or []
+        
+        # Handle form data or JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # Process form data
+            for key in request.form:
+                data[key] = request.form.get(key)
+            
+            # Handle new image uploads to Google Drive
+            if 'images' in request.files:
+                image_files = request.files.getlist('images')
+                for image_file in image_files:
+                    if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+                        try:
+                            upload_result = drive_service.upload_image(image_file)
+                            new_images.append(upload_result['direct_url'])
+                            print(f"✅ New image uploaded to Google Drive: {upload_result['direct_url']}")
+                        except Exception as upload_error:
+                            print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
+                            continue
+            
+            # Handle image removal
+            if 'remove_images' in data:
+                try:
+                    remove_indices = [int(i) for i in data['remove_images'].split(',')]
+                    current_images = [img for i, img in enumerate(current_images) if i not in remove_indices]
+                except ValueError:
+                    print("⚠️ Invalid remove_images format")
+                    
+        elif request.is_json:
+            # JSON data handling
+            data = request.get_json()
+            if 'images' in data:
+                new_images = data['images'] if isinstance(data['images'], list) else [data['images']]
+        
         # Update product fields
         if 'name' in data:
             product.name = data['name']
         if 'description' in data:
             product.description = data['description']
         if 'price' in data:
-            product.price = Decimal(str(data['price']))
+            product.price = float(data['price'])
         if 'stock' in data:
             product.stock = int(data['stock'])
         if 'category' in data:
-            # FIX: Find the Category instance by name, don't assign string directly
             category_name = data['category']
             category = Category.query.filter_by(name=category_name).first()
             if category:
-                product.category_id = category.id  # Assign the foreign key ID
+                product.category_id = category.id
             else:
                 return jsonify({'error': f'Category "{category_name}" not found'}), 400
         if 'is_active' in data:
             product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
-        if 'images' in data:
-            # Handle images based on your database structure
-            # If images is stored as JSON string, parse it
-            if isinstance(data['images'], str):
-                try:
-                    product.images = json.loads(data['images'])
-                except json.JSONDecodeError:
-                    product.images = [data['images']]
-            else:
-                product.images = data['images']
+        
+        # Update images - combine existing (minus removed) with new images
+        if new_images or current_images != (product.image_list or []):
+            final_images = current_images + new_images
+            product.image_list = final_images
+            print(f"📸 Updated product images: {final_images}")
         
         db.session.commit()
         
@@ -450,9 +653,51 @@ def update_vendor_product(product_id):
     except Exception as e:
         db.session.rollback()
         import traceback
-        traceback.print_exc()  # This will help with debugging
+        traceback.print_exc()
         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
 
+# Add a new route for standalone image upload
+@vendors_bp.route('/upload-image', methods=['POST'])
+@jwt_required()
+def upload_image():
+    """Upload an image to Google Drive and return the URL"""
+    try:
+        user_id = get_jwt_identity()
+        vendor = Vendor.query.filter_by(user_id=user_id).first()
+        
+        if not vendor or vendor.status != VendorStatus.APPROVED:
+            return jsonify({'error': 'Only approved vendors can upload images'}), 403
+        
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not allowed_file(image_file.filename):
+            return jsonify({'error': 'File type not allowed'}), 400
+        
+        # Upload to Google Drive
+        upload_result = drive_service.upload_image(image_file)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Image uploaded successfully',
+            'data': {
+                'imageUrl': upload_result['direct_url'],
+                'fileId': upload_result['file_id'],
+                'fileName': upload_result['file_name']
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"❌ Image upload error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+        
 @vendors_bp.route('/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_vendor_product(product_id):

@@ -120,23 +120,55 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   // Optimized image URL handling
+  // const getImageUrl = (imagePath: string | undefined): string => {
+  //   if (!imagePath) return '/placeholder-product.jpg';
+
+  //   if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+  //     return imagePath;
+  //   }
+
+  //   // Handle different image path formats
+  //   const filename = imagePath.split(/[\\/]/).pop() || imagePath;
+    
+  //   // Check if it's already a full URL
+  //   if (filename.includes('marche-yzzm.onrender.com') || filename.includes('https')) {
+  //     return filename;
+  //   }
+    
+  //   return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+  // };
+
   const getImageUrl = (imagePath: string | undefined): string => {
-    if (!imagePath) return '/placeholder-product.jpg';
+  if (!imagePath) return '/placeholder-product.jpg';
 
-    if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
-      return imagePath;
-    }
+  if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
 
-    // Handle different image path formats
-    const filename = imagePath.split(/[\\/]/).pop() || imagePath;
-    
-    // Check if it's already a full URL
-    if (filename.includes('marche-yzzm.onrender.com') || filename.includes('https')) {
-      return filename;
+  // Handle Google Drive URLs and file IDs
+  if (imagePath.includes('drive.google.com')) {
+    // Convert Google Drive share URL to direct download URL
+    const fileIdMatch = imagePath.match(/[-\w]{25,}/);
+    if (fileIdMatch) {
+      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}`;
     }
-    
-    return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
-  };
+  }
+
+  // If it's a Google Drive file ID directly (long alphanumeric string)
+  if (imagePath.length > 20 && /^[a-zA-Z0-9_-]+$/.test(imagePath)) {
+    return `https://drive.google.com/uc?export=view&id=${imagePath}`;
+  }
+
+  // Handle different image path formats for existing server
+  const filename = imagePath.split(/[\\/]/).pop() || imagePath;
+  
+  // Check if it's already a full URL
+  if (filename.includes('marche-yzzm.onrender.com') || filename.includes('https')) {
+    return filename;
+  }
+  
+  return `https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+};
 
   // Preload and handle images
   useEffect(() => {

@@ -81,25 +81,59 @@ export const ProductDetails: React.FC = () => {
     }
   };
 
+  // const getImageUrl = (imagePath: string | undefined): string => {
+  //   if (!imagePath) return '/placeholder.png';
+  //   if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+  //     return imagePath;
+  //   }
+    
+  //   // Handle Windows paths and different formats
+  //   let cleanPath = imagePath.replace(/\\/g, '/');
+    
+  //   // If it already contains the base URL but with wrong formatting
+  //   if (cleanPath.includes('marche-yzzm.onrender.com')) {
+  //     const urlParts = cleanPath.split('marche-yzzm.onrender.com');
+  //     return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
+  //   }
+    
+  //   // Extract filename and construct URL
+  //   const filename = cleanPath.split('/').pop() || cleanPath;
+  //   return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+  // };
+
+
   const getImageUrl = (imagePath: string | undefined): string => {
-    if (!imagePath) return '/placeholder.png';
-    if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
-      return imagePath;
+  if (!imagePath) return '/placeholder.png';
+  
+  // If it's already a full URL (including Google Drive URLs)
+  if (imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If it's a data URL (base64)
+  if (imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // Handle Google Drive file IDs or paths
+  if (imagePath.includes('drive.google.com')) {
+    // Convert Google Drive share URL to direct download URL
+    const fileIdMatch = imagePath.match(/[-\w]{25,}/);
+    if (fileIdMatch) {
+      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}`;
     }
-    
-    // Handle Windows paths and different formats
-    let cleanPath = imagePath.replace(/\\/g, '/');
-    
-    // If it already contains the base URL but with wrong formatting
-    if (cleanPath.includes('marche-yzzm.onrender.com')) {
-      const urlParts = cleanPath.split('marche-yzzm.onrender.com');
-      return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
-    }
-    
-    // Extract filename and construct URL
-    const filename = cleanPath.split('/').pop() || cleanPath;
-    return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
-  };
+  }
+  
+  // If it's a Google Drive file ID directly
+  if (imagePath.length > 20 && !imagePath.includes('/')) {
+    return `https://drive.google.com/uc?export=view&id=${imagePath}`;
+  }
+  
+  // Fallback to your existing server
+  let cleanPath = imagePath.replace(/\\/g, '/');
+  const filename = cleanPath.split('/').pop() || cleanPath;
+  return `https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+};
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-GM', {

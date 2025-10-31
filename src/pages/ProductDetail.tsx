@@ -75,23 +75,56 @@ export const ProductDetail: React.FC = () => {
     }
   };
 
-  const getImageUrl = (imagePath: string | undefined): string => {
-    if (!imagePath) return '/placeholder.png';
-    if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
-      return imagePath;
-    }
+  // const getImageUrl = (imagePath: string | undefined): string => {
+  //   if (!imagePath) return '/placeholder.png';
+  //   if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+  //     return imagePath;
+  //   }
     
-    let cleanPath = imagePath.replace(/\\/g, '/');
+  //   let cleanPath = imagePath.replace(/\\/g, '/');
     
-    if (cleanPath.includes('marche-yzzm.onrender.com')) {
-      const urlParts = cleanPath.split('marche-yzzm.onrender.com');
-      return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
-    }
+  //   if (cleanPath.includes('marche-yzzm.onrender.com')) {
+  //     const urlParts = cleanPath.split('marche-yzzm.onrender.com');
+  //     return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
+  //   }
     
-    const filename = cleanPath.split('/').pop() || cleanPath;
-    return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
-  };
+  //   const filename = cleanPath.split('/').pop() || cleanPath;
+  //   return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+  // };
 
+
+  const getImageUrl = (imagePath: string | undefined): string => {
+  if (!imagePath) return '/placeholder.png';
+  
+  if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  let cleanPath = imagePath.replace(/\\/g, '/');
+  
+  // Handle Google Drive URLs and file IDs
+  if (cleanPath.includes('drive.google.com')) {
+    // Convert Google Drive share URL to direct download URL
+    const fileIdMatch = cleanPath.match(/[-\w]{25,}/);
+    if (fileIdMatch) {
+      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}`;
+    }
+  }
+  
+  // If it's a Google Drive file ID directly (long alphanumeric string)
+  if (cleanPath.length > 20 && /^[a-zA-Z0-9_-]+$/.test(cleanPath)) {
+    return `https://drive.google.com/uc?export=view&id=${cleanPath}`;
+  }
+  
+  // Handle existing server URLs
+  if (cleanPath.includes('marche-yzzm.onrender.com')) {
+    const urlParts = cleanPath.split('marche-yzzm.onrender.com');
+    return `https://marche-yzzm.onrender.com${urlParts[1]}`; // Fixed: removed extra quote
+  }
+  
+  const filename = cleanPath.split('/').pop() || cleanPath;
+  return `https://marche-yzzm.onrender.com/uploads/products/${filename}`; // Fixed: removed extra quote
+};
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-GM', {
       style: 'currency',
