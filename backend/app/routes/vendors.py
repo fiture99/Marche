@@ -20,7 +20,7 @@ drive_service = GoogleDriveService()  # Initialize Google Drive service
 
 
 # Allowed file extensions for images
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp','avif'}
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -370,14 +370,67 @@ import logging
 #         print(f"Error creating product: {str(e)}")
 #         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
 
+@vendors_bp.route('/debug-drive-upload', methods=['POST'])
+def debug_drive_upload():
+    """Debug route to test Google Drive upload without authentication"""
+    try:
+        print("🧪 DEBUG GOOGLE DRIVE UPLOAD TEST")
+        
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        print(f"🔍 File details:")
+        print(f"   Name: {image_file.filename}")
+        print(f"   Content Type: {image_file.content_type}")
+        print(f"   Content Length: {image_file.content_length}")
+        print(f"   Allowed: {allowed_file(image_file.filename)}")
+        
+        if not allowed_file(image_file.filename):
+            return jsonify({'error': f'File type not allowed: {image_file.filename}'}), 400
+        
+        # Test if file is readable
+        file_data = image_file.read()
+        print(f"🔍 File data size: {len(file_data)} bytes")
+        
+        # Reset file pointer
+        image_file.seek(0)
+        
+        # Test Google Drive upload
+        print("🚀 Attempting Google Drive upload...")
+        try:
+            upload_result = drive_service.upload_image(image_file)
+            print(f"✅ Google Drive upload successful!")
+            print(f"   File ID: {upload_result['file_id']}")
+            print(f"   Direct URL: {upload_result['direct_url']}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Google Drive upload successful',
+                'data': upload_result
+            }), 200
+            
+        except Exception as upload_error:
+            print(f"❌ Google Drive upload failed: {str(upload_error)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'Google Drive upload failed: {str(upload_error)}'}), 500
+            
+    except Exception as e:
+        print(f"💥 Debug upload failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 @vendors_bp.route('/products', methods=['POST'])
 @jwt_required()
 def create_vendor_product():
-    print(f"📨 Request Content-Type: {request.content_type}")
-    print(f"📨 Is JSON: {request.is_json}")
-    print(f"📨 Form data: {dict(request.form)}")
-    print(f"📨 Files: {dict(request.files)}")
+    print(f"🎯 PRODUCT CREATION REQUEST")
+    print(f"📨 Content-Type: {request.content_type}")
+    print(f"📨 Files: {list(request.files.keys())}")
     
     try:
         user_id = get_jwt_identity()
@@ -389,9 +442,8 @@ def create_vendor_product():
         data = {}
         uploaded_images = []
         
-        # Handle both form data and JSON
+        # Handle form data
         if request.content_type and 'multipart/form-data' in request.content_type:
-            # Form data handling
             data = {
                 'name': request.form.get('name'),
                 'price': request.form.get('price'),
@@ -401,58 +453,29 @@ def create_vendor_product():
                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
             }
             
-            print(f"🔍 Processed form data: {data}")
+            print(f"🔍 Form data: {data}")
             
-            # Handle image upload to Google Drive
-            if 'images' in request.files:
-                image_files = request.files.getlist('images')
-                print(f"🔍 Found {len(image_files)} image files")
-                
-                for i, image_file in enumerate(image_files):
-                    print(f"🔍 Processing image {i+1}: {image_file.filename}")
+            # Handle ALL possible image fields
+            for field_name in ['images', 'image']:
+                if field_name in request.files:
+                    image_files = request.files.getlist(field_name)
+                    print(f"🔍 Found {len(image_files)} files in '{field_name}' field")
                     
-                    if image_file and image_file.filename != '' and allowed_file(image_file.filename):
-                        try:
-                            print(f"🔍 Attempting to upload {image_file.filename} to Google Drive...")
-                            # Upload to Google Drive
-                            upload_result = drive_service.upload_image(image_file)
-                            uploaded_images.append(upload_result['direct_url'])
-                            print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
-                        except Exception as upload_error:
-                            print(f"❌ Failed to upload image {image_file.filename} to Google Drive: {str(upload_error)}")
-                            # Continue with other images even if one fails
-                            continue
-                    else:
-                        print(f"⚠️ Skipping invalid image file: {image_file.filename}")
-            
-            # If single image field is used (backward compatibility)
-            elif 'image' in request.files:
-                image_file = request.files['image']
-                print(f"🔍 Processing single image: {image_file.filename}")
-                
-                if image_file and image_file.filename != '' and allowed_file(image_file.filename):
-                    try:
-                        print(f"🔍 Attempting to upload single image to Google Drive...")
-                        upload_result = drive_service.upload_image(image_file)
-                        uploaded_images.append(upload_result['direct_url'])
-                        print(f"✅ Image uploaded to Google Drive: {upload_result['direct_url']}")
-                    except Exception as upload_error:
-                        print(f"❌ Failed to upload single image to Google Drive: {str(upload_error)}")
-                else:
-                    print(f"⚠️ Invalid single image file: {image_file.filename}")
-            else:
-                print("⚠️ No image files found in request")
-                        
-        elif request.is_json:
-            # JSON data handling
-            data = request.get_json()
-            print(f"🔍 JSON data received: {data}")
-            # If images are provided as URLs in JSON, use them directly
-            if 'images' in data:
-                uploaded_images = data['images'] if isinstance(data['images'], list) else [data['images']]
-                print(f"🔍 Using images from JSON: {uploaded_images}")
-        else:
-            return jsonify({'error': 'Unsupported content type'}), 400
+                    for i, image_file in enumerate(image_files):
+                        if image_file and image_file.filename != '':
+                            print(f"🔍 Processing {field_name} {i+1}: {image_file.filename}")
+                            
+                            if allowed_file(image_file.filename):
+                                try:
+                                    print(f"🔄 Uploading to Google Drive...")
+                                    upload_result = drive_service.upload_image(image_file)
+                                    uploaded_images.append(upload_result['direct_url'])
+                                    print(f"✅ Upload successful: {upload_result['direct_url']}")
+                                except Exception as upload_error:
+                                    print(f"❌ Upload failed: {upload_error}")
+                                    # Continue with other images
+                            else:
+                                print(f"⚠️ File type not allowed: {image_file.filename}")
         
         # Validate required fields
         required_fields = ['name', 'price', 'stock', 'description', 'category']
@@ -460,7 +483,7 @@ def create_vendor_product():
             if not data.get(field):
                 return jsonify({'error': f'Missing required field: {field}'}), 400
         
-        # Find category by name
+        # Find category
         category = Category.query.filter_by(name=data['category']).first()
         if not category:
             return jsonify({'error': f'Category "{data["category"]}" not found'}), 404
@@ -479,12 +502,12 @@ def create_vendor_product():
             is_active=data.get('is_active', True)
         )
         
-        # Set images from Google Drive
+        # Set images
         if uploaded_images:
             product.image_list = uploaded_images
-            print(f"📸 Product images set: {uploaded_images}")
+            print(f"📸 Product images saved: {uploaded_images}")
         else:
-            print("⚠️ No images were uploaded, product will have no images")
+            print("⚠️ No images were uploaded")
         
         db.session.add(product)
         db.session.commit()
@@ -496,11 +519,10 @@ def create_vendor_product():
             
     except Exception as e:
         db.session.rollback()
-        print(f"❌ Error creating product: {str(e)}")
+        print(f"💥 Product creation failed: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
-
 
 # @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 # @jwt_required()
@@ -680,47 +702,109 @@ def update_vendor_product(product_id):
         traceback.print_exc()
         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
 
-# Add a new route for standalone image upload
+# # Add a new route for standalone image upload
 @vendors_bp.route('/upload-image', methods=['POST'])
 @jwt_required()
-def upload_image():
-    """Upload an image to Google Drive and return the URL"""
+def upload_image(self, file_storage, filename=None):
+    """Upload a Flask FileStorage object to Google Drive"""
     try:
-        user_id = get_jwt_identity()
-        vendor = Vendor.query.filter_by(user_id=user_id).first()
+        print("🚀 STARTING GOOGLE DRIVE UPLOAD PROCESS")
         
-        if not vendor or vendor.status != VendorStatus.APPROVED:
-            return jsonify({'error': 'Only approved vendors can upload images'}), 403
+        if not filename:
+            filename = file_storage.filename
         
-        if 'image' not in request.files:
-            return jsonify({'error': 'No image file provided'}), 400
+        print(f"🔍 Upload details:")
+        print(f"   Original filename: {filename}")
+        print(f"   MIME type: {file_storage.mimetype}")
+        print(f"   Content type: {file_storage.content_type}")
         
-        image_file = request.files['image']
-        if image_file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+        # Check if service is available
+        if not self.service:
+            raise Exception("Google Drive service not initialized")
         
-        if not allowed_file(image_file.filename):
-            return jsonify({'error': 'File type not allowed'}), 400
+        # Test file reading
+        current_pos = file_storage.tell()
+        print(f"🔍 File stream position: {current_pos}")
         
-        # Upload to Google Drive
-        upload_result = drive_service.upload_image(image_file)
+        file_data = file_storage.read()
+        print(f"🔍 File data read: {len(file_data)} bytes")
         
-        return jsonify({
-            'success': True,
-            'message': 'Image uploaded successfully',
-            'data': {
-                'imageUrl': upload_result['direct_url'],
-                'fileId': upload_result['file_id'],
-                'fileName': upload_result['file_name']
+        if len(file_data) == 0:
+            raise Exception("File is empty - no data could be read")
+        
+        # Reset file pointer
+        file_storage.seek(0)
+        file_stream = io.BytesIO(file_data)
+        
+        # Generate unique filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
+        unique_filename = f"product_{timestamp}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        
+        print(f"📤 Generated unique filename: {unique_filename}")
+        
+        # Create file metadata
+        file_metadata = {
+            'name': unique_filename,
+            'parents': [self.folder_id]
+        }
+        
+        print(f"🔍 File metadata: {file_metadata}")
+        
+        # Create media upload
+        media = MediaIoBaseUpload(
+            file_stream, 
+            mimetype=file_storage.mimetype,
+            resumable=False  # Change to False for simpler debugging
+        )
+        
+        print("🔍 Starting Google Drive API call...")
+        
+        # Upload file
+        file = self.service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, name, webViewLink, mimeType, size'
+        ).execute()
+
+        print(f"✅ File uploaded to Google Drive!")
+        print(f"   File ID: {file.get('id')}")
+        print(f"   File Name: {file.get('name')}")
+
+        # Make file publicly accessible
+        print("🔍 Setting file permissions...")
+        self.service.permissions().create(
+            fileId=file.get('id'),
+            body={
+                'role': 'reader',
+                'type': 'anyone'
             }
-        }), 200
+        ).execute()
+
+        print("✅ File permissions set to public")
+
+        # Return direct view URL
+        direct_url = f"https://drive.google.com/uc?export=view&id={file.get('id')}"
         
+        result = {
+            'file_id': file.get('id'),
+            'direct_url': direct_url,
+            'web_view_link': file.get('webViewLink'),
+            'file_name': file.get('name'),
+            'original_filename': filename
+        }
+        
+        print(f"🎉 UPLOAD SUCCESSFUL!")
+        print(f"   Direct URL: {direct_url}")
+        
+        return result
+
     except Exception as e:
-        print(f"❌ Image upload error: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        print(f"💥 GOOGLE DRIVE UPLOAD FAILED: {str(e)}")
+        import traceback
+        print("🔍 Full traceback:")
+        traceback.print_exc()
+        raise Exception(f"Failed to upload to Google Drive: {str(e)}")
 
 @vendors_bp.route('/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
