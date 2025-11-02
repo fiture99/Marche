@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 class GoogleDriveService:
     def __init__(self):
-        self.folder_id = '1JXV9HEI4lNONpWDnUtDl2Y0tcV7Gah9Q'
+        # 🔥 REPLACE THIS WITH YOUR SHARED DRIVE ID
+        # Current folder_id is a personal folder - service accounts can't use this!
+        self.shared_drive_id = 'YOUR_SHARED_DRIVE_ID_HERE'  # ← MUST BE A SHARED DRIVE ID
         self.service = self._authenticate()
 
     def _authenticate(self):
@@ -66,12 +68,13 @@ class GoogleDriveService:
             raise
 
     def upload_image(self, file_storage, filename=None):
-        """Upload a Flask FileStorage object to Google Drive"""
+        """Upload a Flask FileStorage object to Google Drive SHARED DRIVE"""
         try:
             if not filename:
                 filename = file_storage.filename
             
-            print(f"🚀 Uploading: {filename}")
+            print(f"🚀 Uploading to Shared Drive: {filename}")
+            print(f"📁 Shared Drive ID: {self.shared_drive_id}")
             
             # Generate unique filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -82,27 +85,34 @@ class GoogleDriveService:
             file_data = file_storage.read()
             file_stream = io.BytesIO(file_data)
             
-            # Create file metadata
+            # Create file metadata for SHARED DRIVE
             file_metadata = {
                 'name': unique_filename,
-                'parents': [self.folder_id]
+                'parents': [self.shared_drive_id]  # This MUST be a Shared Drive ID
             }
             
-            # Upload file
+            # Upload file to SHARED DRIVE
             media = MediaIoBaseUpload(file_stream, mimetype=file_storage.mimetype)
+            
+            # 🔥 CRITICAL: Add supportsAllDrives=True for Shared Drives
             file = self.service.files().create(
                 body=file_metadata,
                 media_body=media,
-                fields='id, name, webViewLink, mimeType'
+                fields='id, name, webViewLink, mimeType',
+                supportsAllDrives=True  # 🔑 REQUIRED FOR SHARED DRIVES
             ).execute()
 
-            print(f"✅ File uploaded: {file.get('id')}")
+            print(f"✅ File uploaded to Shared Drive: {file.get('id')}")
 
             # Make file publicly accessible
+            # 🔥 CRITICAL: Add supportsAllDrives=True for permissions too
             self.service.permissions().create(
                 fileId=file.get('id'),
-                body={'role': 'reader', 'type': 'anyone'}
+                body={'role': 'reader', 'type': 'anyone'},
+                supportsAllDrives=True  # 🔑 REQUIRED FOR SHARED DRIVES
             ).execute()
+
+            print("✅ File permissions set to public")
 
             # Return direct view URL
             direct_url = f"https://drive.google.com/uc?export=view&id={file.get('id')}"
@@ -115,14 +125,48 @@ class GoogleDriveService:
             }
 
         except Exception as e:
-            print(f"❌ Upload failed: {str(e)}")
+            print(f"❌ Upload to Shared Drive failed: {str(e)}")
             raise
 
     def delete_image(self, file_id):
         try:
-            self.service.files().delete(fileId=file_id).execute()
+            # 🔥 Add supportsAllDrives for delete operations too
+            self.service.files().delete(
+                fileId=file_id,
+                supportsAllDrives=True  # 🔑 REQUIRED FOR SHARED DRIVES
+            ).execute()
             print(f"✅ File deleted: {file_id}")
             return True
         except Exception as e:
             print(f"❌ Delete failed: {str(e)}")
             raise
+
+    def test_shared_drive_access(self):
+        """Test if we can access the Shared Drive"""
+        try:
+            print(f"🧪 Testing Shared Drive access: {self.shared_drive_id}")
+            
+            # List files in the Shared Drive
+            results = self.service.files().list(
+                corpora='drive',
+                driveId=self.shared_drive_id,
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
+                pageSize=5,
+                fields="files(id, name)"
+            ).execute()
+            
+            files = results.get('files', [])
+            print(f"✅ Shared Drive access successful! Found {len(files)} files")
+            return {
+                'success': True,
+                'file_count': len(files),
+                'files': files
+            }
+            
+        except Exception as e:
+            print(f"❌ Shared Drive access failed: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
