@@ -370,9 +370,30 @@ import logging
 #         print(f"Error creating product: {str(e)}")
 #         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
 
+
+
+# In your vendors_bp routes (add these)
+
+@vendors_bp.route('/debug-folder-access', methods=['GET'])
+def debug_folder_access():
+    """Test Google Drive folder access"""
+    try:
+        test_result = drive_service.test_folder_access()
+        
+        return jsonify({
+            'folder_id': drive_service.folder_id,
+            'test_result': test_result
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Folder access test failed: {str(e)}',
+            'folder_id': drive_service.folder_id
+        }), 500
+
 @vendors_bp.route('/debug-drive-upload', methods=['POST'])
 def debug_drive_upload():
-    """Debug route to test Google Drive upload without authentication"""
+    """Debug route to test Google Drive upload"""
     try:
         print("🧪 DEBUG GOOGLE DRIVE UPLOAD TEST")
         
@@ -385,19 +406,19 @@ def debug_drive_upload():
         
         print(f"🔍 File details:")
         print(f"   Name: {image_file.filename}")
-        print(f"   Content Type: {image_file.content_type}")
-        print(f"   Content Length: {image_file.content_length}")
+        print(f"   Folder ID: {drive_service.folder_id}")
         print(f"   Allowed: {allowed_file(image_file.filename)}")
         
         if not allowed_file(image_file.filename):
             return jsonify({'error': f'File type not allowed: {image_file.filename}'}), 400
         
-        # Test if file is readable
-        file_data = image_file.read()
-        print(f"🔍 File data size: {len(file_data)} bytes")
-        
-        # Reset file pointer
-        image_file.seek(0)
+        # Test folder access first
+        folder_test = drive_service.test_folder_access()
+        if not folder_test.get('success'):
+            return jsonify({
+                'error': 'Folder access failed',
+                'details': folder_test
+            }), 500
         
         # Test Google Drive upload
         print("🚀 Attempting Google Drive upload...")
@@ -410,14 +431,19 @@ def debug_drive_upload():
             return jsonify({
                 'success': True,
                 'message': 'Google Drive upload successful',
-                'data': upload_result
+                'data': upload_result,
+                'folder_test': folder_test
             }), 200
             
         except Exception as upload_error:
             print(f"❌ Google Drive upload failed: {str(upload_error)}")
             import traceback
             traceback.print_exc()
-            return jsonify({'error': f'Google Drive upload failed: {str(upload_error)}'}), 500
+            return jsonify({
+                'error': f'Google Drive upload failed: {str(upload_error)}',
+                'folder_id': drive_service.folder_id,
+                'folder_test': folder_test
+            }), 500
             
     except Exception as e:
         print(f"💥 Debug upload failed: {str(e)}")
@@ -523,7 +549,6 @@ def create_vendor_product():
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
-
 # @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 # @jwt_required()
 # def update_vendor_product(product_id):
@@ -873,3 +898,8 @@ def get_vendor_orders():
             'has_prev': orders.has_prev
         }
     }), 200
+
+
+
+
+    
