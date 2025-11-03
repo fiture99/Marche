@@ -138,37 +138,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   //   return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
   // };
 
-  const getImageUrl = (imagePath: string | undefined): string => {
-  if (!imagePath) return '/placeholder-product.jpg';
 
-  if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
+  // === AWS======
+
+  // Replace the entire getImageUrl function with this:
+const getImageUrl = (imagePath: string | undefined): string => {
+  if (!imagePath) return '/placeholder-product.jpg';
+  
+  // If it's already a full URL (S3 or otherwise), use it directly
+  if (imagePath.startsWith('https://') || imagePath.startsWith('http://')) {
     return imagePath;
   }
-
-  // Handle Google Drive URLs and file IDs
-  if (imagePath.includes('drive.google.com')) {
-    // Convert Google Drive share URL to direct download URL
-    const fileIdMatch = imagePath.match(/[-\w]{25,}/);
-    if (fileIdMatch) {
-      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}`;
-    }
-  }
-
-  // If it's a Google Drive file ID directly (long alphanumeric string)
-  if (imagePath.length > 20 && /^[a-zA-Z0-9_-]+$/.test(imagePath)) {
-    return `https://drive.google.com/uc?export=view&id=${imagePath}`;
-  }
-
-  // Handle different image path formats for existing server
-  const filename = imagePath.split(/[\\/]/).pop() || imagePath;
   
-  // Check if it's already a full URL
-  if (filename.includes('marche-yzzm.onrender.com') || filename.includes('https')) {
-    return filename;
-  }
-  
-  return `https://marche-yzzm.onrender.com/uploads/products/${filename}`;
+  // Fallback for any legacy local paths (shouldn't happen with S3)
+  return '/placeholder-product.jpg';
 };
+
+
 
   // Preload and handle images
   useEffect(() => {

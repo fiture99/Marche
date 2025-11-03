@@ -18,6 +18,28 @@ export const ProductDetails: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
+  // ✅ FIXED: Single getImageUrl function
+  const getImageUrl = (imagePath: string | undefined): string => {
+    if (!imagePath) return '/placeholder.png';
+    
+    // ✅ Use S3 URLs directly - no conversion needed!
+    if (imagePath.startsWith('https://') || imagePath.startsWith('http://')) {
+      return imagePath;
+    }
+    
+    // Fallback for any legacy local paths (shouldn't happen with S3)
+    return '/placeholder.png';
+  };
+
+  // ✅ FIXED: Format price function
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-GM', {
+      style: 'currency',
+      currency: 'GMD',
+      minimumFractionDigits: 2
+    }).format(price);
+  };
+
   useEffect(() => {
     // If we already have product data from navigation state, skip fetching
     if (location.state?.product) {
@@ -81,67 +103,10 @@ export const ProductDetails: React.FC = () => {
     }
   };
 
-  // const getImageUrl = (imagePath: string | undefined): string => {
-  //   if (!imagePath) return '/placeholder.png';
-  //   if (imagePath.startsWith('https') || imagePath.startsWith('data:')) {
-  //     return imagePath;
-  //   }
-    
-  //   // Handle Windows paths and different formats
-  //   let cleanPath = imagePath.replace(/\\/g, '/');
-    
-  //   // If it already contains the base URL but with wrong formatting
-  //   if (cleanPath.includes('marche-yzzm.onrender.com')) {
-  //     const urlParts = cleanPath.split('marche-yzzm.onrender.com');
-  //     return `'https://marche-yzzm.onrender.com${urlParts[1]}`;
-  //   }
-    
-  //   // Extract filename and construct URL
-  //   const filename = cleanPath.split('/').pop() || cleanPath;
-  //   return `'https://marche-yzzm.onrender.com/uploads/products/${filename}`;
-  // };
-
-
-  const getImageUrl = (imagePath: string | undefined): string => {
-  if (!imagePath) return '/placeholder.png';
-  
-  // If it's already a full URL (including Google Drive URLs)
-  if (imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-  
-  // If it's a data URL (base64)
-  if (imagePath.startsWith('data:')) {
-    return imagePath;
-  }
-  
-  // Handle Google Drive file IDs or paths
-  if (imagePath.includes('drive.google.com')) {
-    // Convert Google Drive share URL to direct download URL
-    const fileIdMatch = imagePath.match(/[-\w]{25,}/);
-    if (fileIdMatch) {
-      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}`;
-    }
-  }
-  
-  // If it's a Google Drive file ID directly
-  if (imagePath.length > 20 && !imagePath.includes('/')) {
-    return `https://drive.google.com/uc?export=view&id=${imagePath}`;
-  }
-  
-  // Fallback to your existing server
-  let cleanPath = imagePath.replace(/\\/g, '/');
-  const filename = cleanPath.split('/').pop() || cleanPath;
-  return `https://marche-yzzm.onrender.com/uploads/products/${filename}`;
-};
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-GM', {
-      style: 'currency',
-      currency: 'GMD',
-      minimumFractionDigits: 2
-    }).format(price);
-  };
+  // 🚨 DELETE THESE DUPLICATE FUNCTIONS:
+  // ❌ Remove the commented getImageUrl function
+  // ❌ Remove the duplicate getImageUrl function that's cut off
+  // ❌ Remove the "==== AWS ====" section
 
   if (loading) {
     return (
