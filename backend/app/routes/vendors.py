@@ -9,6 +9,7 @@ from app.models.category import Category  # ✅ Add this line
 # from app.services.google_drive_service import GoogleDriveService  # Add this import
 
 
+
 from marshmallow import Schema, fields, ValidationError
 from sqlalchemy import or_
 import os
@@ -287,13 +288,99 @@ def get_vendor_products():
 import logging
 
 # app/routes/vendors.py
+# @vendors_bp.route('/products', methods=['POST'])
+# @jwt_required()
+# def create_vendor_product():
+#     print(f"📨 Request Content-Type: {request.content_type}")
+#     print(f"📨 Is JSON: {request.is_json}")
+#     print(f"📨 Form data: {dict(request.form)}")
+#     print(f"📨 Files: {dict(request.files)}")
+#     try:
+#         user_id = get_jwt_identity()
+#         vendor = Vendor.query.filter_by(user_id=user_id).first()
+        
+#         if not vendor or vendor.status != VendorStatus.APPROVED:
+#             return jsonify({'error': 'Only approved vendors can create products'}), 403
+        
+#         data = {}
+        
+#         # Handle both form data and JSON
+#         if request.content_type and 'multipart/form-data' in request.content_type:
+#             # Form data handling
+#             data = {
+#                 'name': request.form.get('name'),
+#                 'price': request.form.get('price'),
+#                 'stock': request.form.get('stock'),
+#                 'description': request.form.get('description'),
+#                 'category': request.form.get('category'),
+#                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
+#             }
+            
+#             # Handle image upload
+#             if 'image' in request.files:
+#                 image_file = request.files['image']
+#                 if image_file and image_file.filename != '':
+#                     filename = secure_filename(image_file.filename)
+#                     # Save file and get path
+#                     image_path = os.path.join('uploads', 'products', filename)
+#                     os.makedirs(os.path.dirname(image_path), exist_ok=True)
+#                     image_file.save(image_path)
+#                     data['image'] = f'/static/{image_path}'
+                    
+#         elif request.is_json:
+#             # JSON data handling
+#             data = request.get_json()
+#         else:
+#             return jsonify({'error': 'Unsupported content type'}), 400
+        
+#         # Validate required fields
+#         required_fields = ['name', 'price', 'stock', 'description', 'category']
+#         for field in required_fields:
+#             if not data.get(field):
+#                 return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+#         # Find category by name
+#         category = Category.query.filter_by(name=data['category']).first()
+#         if not category:
+#             return jsonify({'error': f'Category "{data["category"]}" not found'}), 404
+        
+#         # Create product
+#         product = Product(
+#             vendor_id=vendor.id,
+#             category_id=category.id,
+#             name=data['name'],
+#             description=data['description'],
+#             price=float(data['price']),
+#             stock=int(data['stock']),
+#             is_active=data.get('is_active', True)
+#         )
+        
+#         if data.get('image'):
+#             product.image_list = [data['image']]
+        
+#         db.session.add(product)
+#         db.session.commit()
+        
+#         return jsonify({
+#             'message': 'Product created successfully',
+#             'product': product.to_dict()
+#         }), 201
+            
+#     except Exception as e:
+#         db.session.rollback()
+#         print(f"Error creating product: {str(e)}")
+#         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
+
+
+# In your vendors_bp routes
+from app.services.s3_storage_service import s3_storage_service
+
 @vendors_bp.route('/products', methods=['POST'])
 @jwt_required()
 def create_vendor_product():
-    print(f"📨 Request Content-Type: {request.content_type}")
-    print(f"📨 Is JSON: {request.is_json}")
-    print(f"📨 Form data: {dict(request.form)}")
-    print(f"📨 Files: {dict(request.files)}")
+    print(f"🎯 PRODUCT CREATION REQUEST")
+    print(f"📨 Content-Type: {request.content_type}")
+    
     try:
         user_id = get_jwt_identity()
         vendor = Vendor.query.filter_by(user_id=user_id).first()
@@ -302,10 +389,10 @@ def create_vendor_product():
             return jsonify({'error': 'Only approved vendors can create products'}), 403
         
         data = {}
+        uploaded_images = []
         
-        # Handle both form data and JSON
+        # Handle form data
         if request.content_type and 'multipart/form-data' in request.content_type:
-            # Form data handling
             data = {
                 'name': request.form.get('name'),
                 'price': request.form.get('price'),
@@ -315,22 +402,29 @@ def create_vendor_product():
                 'is_active': request.form.get('is_active', 'true').lower() == 'true'
             }
             
-            # Handle image upload
-            if 'image' in request.files:
-                image_file = request.files['image']
-                if image_file and image_file.filename != '':
-                    filename = secure_filename(image_file.filename)
-                    # Save file and get path
-                    image_path = os.path.join('uploads', 'products', filename)
-                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-                    image_file.save(image_path)
-                    data['image'] = f'/static/{image_path}'
+            print(f"🔍 Form data: {data}")
+            
+            # Handle ALL possible image fields using S3
+            for field_name in ['images', 'image']:
+                if field_name in request.files:
+                    image_files = request.files.getlist(field_name)
+                    print(f"🔍 Found {len(image_files)} files in '{field_name}' field")
                     
-        elif request.is_json:
-            # JSON data handling
-            data = request.get_json()
-        else:
-            return jsonify({'error': 'Unsupported content type'}), 400
+                    for i, image_file in enumerate(image_files):
+                        if image_file and image_file.filename != '':
+                            print(f"🔍 Processing {field_name} {i+1}: {image_file.filename}")
+                            
+                            if allowed_file(image_file.filename):
+                                try:
+                                    print(f"🔄 Uploading to AWS S3...")
+                                    upload_result = s3_storage_service.upload_image(image_file)
+                                    uploaded_images.append(upload_result['direct_url'])
+                                    print(f"✅ S3 upload successful: {upload_result['direct_url']}")
+                                except Exception as upload_error:
+                                    print(f"❌ S3 upload failed: {upload_error}")
+                                    # Continue with other images
+                            else:
+                                print(f"⚠️ File type not allowed: {image_file.filename}")
         
         # Validate required fields
         required_fields = ['name', 'price', 'stock', 'description', 'category']
@@ -338,10 +432,13 @@ def create_vendor_product():
             if not data.get(field):
                 return jsonify({'error': f'Missing required field: {field}'}), 400
         
-        # Find category by name
+        # Find category
         category = Category.query.filter_by(name=data['category']).first()
         if not category:
             return jsonify({'error': f'Category "{data["category"]}" not found'}), 404
+        
+        print(f"🔍 Creating product with data: {data}")
+        print(f"🔍 Images to be saved: {uploaded_images}")
         
         # Create product
         product = Product(
@@ -354,8 +451,12 @@ def create_vendor_product():
             is_active=data.get('is_active', True)
         )
         
-        if data.get('image'):
-            product.image_list = [data['image']]
+        # Set images
+        if uploaded_images:
+            product.image_list = uploaded_images
+            print(f"📸 Product images saved: {uploaded_images}")
+        else:
+            print("⚠️ No images were uploaded")
         
         db.session.add(product)
         db.session.commit()
@@ -367,9 +468,59 @@ def create_vendor_product():
             
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating product: {str(e)}")
+        print(f"💥 Product creation failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
 
+
+# =========================================
+
+
+@vendors_bp.route('/debug-s3-connection', methods=['GET'])
+def debug_s3_connection():
+    """Test S3 connection and permissions"""
+    try:
+        test_result = s3_storage_service.test_connection()
+        return jsonify(test_result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@vendors_bp.route('/test-s3-upload', methods=['POST'])
+@jwt_required()
+def test_s3_upload():
+    """Test S3 upload functionality"""
+    try:
+        print("🧪 TESTING S3 UPLOAD")
+        
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        print(f"🔍 Testing S3 with file: {image_file.filename}")
+        
+        if not allowed_file(image_file.filename):
+            return jsonify({'error': f'File type not allowed: {image_file.filename}'}), 400
+        
+        # Test S3 upload
+        upload_result = s3_storage_service.upload_image(image_file)
+        
+        return jsonify({
+            'success': True,
+            'message': 'S3 upload successful!',
+            'data': upload_result,
+            's3_bucket': os.environ.get('AWS_S3_BUCKET')
+        }), 200
+        
+    except Exception as e:
+        print(f"❌ S3 upload test failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
+# =============================================
 # @vendors_bp.route('/debug-drive-upload', methods=['POST'])
 # def debug_drive_upload():
 #     """Debug route to test Google Drive upload without authentication"""
