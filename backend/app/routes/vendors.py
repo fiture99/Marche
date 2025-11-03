@@ -763,7 +763,7 @@ def update_vendor_product(product_id):
 
     # ============ AWS========
 
-    @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
+@vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def update_vendor_product(product_id):
     """Update a product for the current vendor with S3 support"""
