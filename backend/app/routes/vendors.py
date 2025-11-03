@@ -7,6 +7,7 @@ from app.models.product import Product
 from app.models.order import Order
 from app.models.category import Category  # ✅ Add this line
 # from app.services.google_drive_service import GoogleDriveService  # Add this import
+from app.services.s3_storage_service import s3_storage_service
 
 
 
@@ -179,6 +180,46 @@ def update_my_vendor():
         db.session.rollback()
         return jsonify({'error': 'Update failed', 'message': str(e)}), 500
 
+# ======= Local=====
+# @vendors_bp.route('/products', methods=['GET'])
+# @jwt_required()
+# def get_vendor_products():
+#     """Get current vendor's products"""
+#     user_id = get_jwt_identity()
+#     vendor = Vendor.query.filter_by(user_id=user_id).first()
+    
+#     if not vendor:
+#         return jsonify({'error': 'Vendor profile not found'}), 404
+    
+#     if vendor.status != VendorStatus.APPROVED:
+#         return jsonify({'error': 'Vendor not approved'}), 403
+    
+#     page = request.args.get('page', 1, type=int)
+#     per_page = request.args.get('per_page', 20, type=int)
+#     include_inactive = request.args.get('include_inactive', 'false').lower() == 'true'
+    
+#     query = Product.query.filter_by(vendor_id=vendor.id)
+#     if not include_inactive:
+#         query = query.filter_by(is_active=True)
+    
+#     products = query.order_by(Product.created_at.desc()).paginate(
+#         page=page, per_page=per_page, error_out=False
+#     )
+    
+#     return jsonify({
+#         'products': [product.to_dict() for product in products.items],
+#         'pagination': {
+#             'page': page,
+#             'pages': products.pages,
+#             'per_page': per_page,
+#             'total': products.total,
+#             'has_next': products.has_next,
+#             'has_prev': products.has_prev
+#         }
+#     }), 200
+
+# ====== AWS ======
+
 @vendors_bp.route('/products', methods=['GET'])
 @jwt_required()
 def get_vendor_products():
@@ -204,8 +245,13 @@ def get_vendor_products():
         page=page, per_page=per_page, error_out=False
     )
     
+    # Convert products to dict - this will include S3 URLs from image_list
+    products_data = [product.to_dict() for product in products.items]
+    
+    print(f"📦 Retrieved {len(products_data)} products with S3 image URLs")
+    
     return jsonify({
-        'products': [product.to_dict() for product in products.items],
+        'products': products_data,
         'pagination': {
             'page': page,
             'pages': products.pages,
@@ -215,6 +261,8 @@ def get_vendor_products():
             'has_prev': products.has_prev
         }
     }), 200
+    
+
 
 # @vendors_bp.route('/products', methods=['POST'])
 # @jwt_required()
@@ -286,7 +334,7 @@ def get_vendor_products():
 #         return jsonify({'error': 'Product creation failed', 'message': str(e)}), 500
 
 import logging
-
+# ========== Local ======
 # app/routes/vendors.py
 # @vendors_bp.route('/products', methods=['POST'])
 # @jwt_required()
@@ -373,7 +421,9 @@ import logging
 
 
 # In your vendors_bp routes
-from app.services.s3_storage_service import s3_storage_service
+
+
+# ====== AWS ====
 
 @vendors_bp.route('/products', methods=['POST'])
 @jwt_required()
@@ -477,55 +527,21 @@ def create_vendor_product():
 # =========================================
 
 
-@vendors_bp.route('/debug-s3-connection', methods=['GET'])
-def debug_s3_connection():
-    """Test S3 connection and permissions"""
-    try:
-        test_result = s3_storage_service.test_connection()
-        return jsonify(test_result), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@vendors_bp.route('/test-s3-upload', methods=['POST'])
-@jwt_required()
-def test_s3_upload():
-    """Test S3 upload functionality"""
-    try:
-        print("🧪 TESTING S3 UPLOAD")
-        
-        if 'image' not in request.files:
-            return jsonify({'error': 'No image file provided'}), 400
-        
-        image_file = request.files['image']
-        if image_file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
-        
-        print(f"🔍 Testing S3 with file: {image_file.filename}")
-        
-        if not allowed_file(image_file.filename):
-            return jsonify({'error': f'File type not allowed: {image_file.filename}'}), 400
-        
-        # Test S3 upload
-        upload_result = s3_storage_service.upload_image(image_file)
-        
-        return jsonify({
-            'success': True,
-            'message': 'S3 upload successful!',
-            'data': upload_result,
-            's3_bucket': os.environ.get('AWS_S3_BUCKET')
-        }), 200
-        
-    except Exception as e:
-        print(f"❌ S3 upload test failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
-# =============================================
-# @vendors_bp.route('/debug-drive-upload', methods=['POST'])
-# def debug_drive_upload():
-#     """Debug route to test Google Drive upload without authentication"""
+# @vendors_bp.route('/debug-s3-connection', methods=['GET'])
+# def debug_s3_connection():
+#     """Test S3 connection and permissions"""
 #     try:
-#         print("🧪 DEBUG GOOGLE DRIVE UPLOAD TEST")
+#         test_result = s3_storage_service.test_connection()
+#         return jsonify(test_result), 200
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+
+# @vendors_bp.route('/test-s3-upload', methods=['POST'])
+# @jwt_required()
+# def test_s3_upload():
+#     """Test S3 upload functionality"""
+#     try:
+#         print("🧪 TESTING S3 UPLOAD")
         
 #         if 'image' not in request.files:
 #             return jsonify({'error': 'No image file provided'}), 400
@@ -534,47 +550,28 @@ def test_s3_upload():
 #         if image_file.filename == '':
 #             return jsonify({'error': 'No file selected'}), 400
         
-#         print(f"🔍 File details:")
-#         print(f"   Name: {image_file.filename}")
-#         print(f"   Content Type: {image_file.content_type}")
-#         print(f"   Content Length: {image_file.content_length}")
-#         print(f"   Allowed: {allowed_file(image_file.filename)}")
+#         print(f"🔍 Testing S3 with file: {image_file.filename}")
         
 #         if not allowed_file(image_file.filename):
 #             return jsonify({'error': f'File type not allowed: {image_file.filename}'}), 400
         
-#         # Test if file is readable
-#         file_data = image_file.read()
-#         print(f"🔍 File data size: {len(file_data)} bytes")
+#         # Test S3 upload
+#         upload_result = s3_storage_service.upload_image(image_file)
         
-#         # Reset file pointer
-#         image_file.seek(0)
+#         return jsonify({
+#             'success': True,
+#             'message': 'S3 upload successful!',
+#             'data': upload_result,
+#             's3_bucket': os.environ.get('AWS_S3_BUCKET')
+#         }), 200
         
-#         # Test Google Drive upload
-#         print("🚀 Attempting Google Drive upload...")
-#         try:
-#             upload_result = drive_service.upload_image(image_file)
-#             print(f"✅ Google Drive upload successful!")
-#             print(f"   File ID: {upload_result['file_id']}")
-#             print(f"   Direct URL: {upload_result['direct_url']}")
-            
-#             return jsonify({
-#                 'success': True,
-#                 'message': 'Google Drive upload successful',
-#                 'data': upload_result
-#             }), 200
-            
-#         except Exception as upload_error:
-#             print(f"❌ Google Drive upload failed: {str(upload_error)}")
-#             import traceback
-#             traceback.print_exc()
-#             return jsonify({'error': f'Google Drive upload failed: {str(upload_error)}'}), 500
-            
 #     except Exception as e:
-#         print(f"💥 Debug upload failed: {str(e)}")
+#         print(f"❌ S3 upload test failed: {str(e)}")
 #         import traceback
 #         traceback.print_exc()
-#         return jsonify({'error': str(e)}), 500
+#         return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
+# =============================================
+# 
 
 # @vendors_bp.route('/products', methods=['POST'])
 # @jwt_required()
@@ -675,6 +672,9 @@ def test_s3_upload():
 #         traceback.print_exc()
 #         return jsonify({'error': 'Failed to create product', 'message': str(e)}), 500
 
+
+
+# ======= Local=======
 @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def update_vendor_product(product_id):
@@ -760,202 +760,105 @@ def update_vendor_product(product_id):
         traceback.print_exc()  # This will help with debugging
         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
 
-# @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
-# @jwt_required()
-# def update_vendor_product(product_id):
-#     """Update a product for the current vendor with Google Drive support"""
-#     user_id = get_jwt_identity()
-#     vendor = Vendor.query.filter_by(user_id=user_id).first()
-    
-#     if not vendor:
-#         return jsonify({'error': 'Vendor profile not found'}), 404
-    
-#     if vendor.status != VendorStatus.APPROVED:
-#         return jsonify({'error': 'Vendor not approved'}), 403
-    
-#     product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
-#     if not product:
-#         return jsonify({'error': 'Product not found or access denied'}), 404
-    
-#     try:
-#         data = {}
-#         new_images = []
-#         current_images = product.image_list or []
-        
-#         # Handle form data or JSON
-#         if request.content_type and 'multipart/form-data' in request.content_type:
-#             # Process form data
-#             for key in request.form:
-#                 data[key] = request.form.get(key)
-            
-#             # Handle new image uploads to Google Drive
-#             if 'images' in request.files:
-#                 image_files = request.files.getlist('images')
-#                 for image_file in image_files:
-#                     if image_file and image_file.filename != '' and allowed_file(image_file.filename):
-#                         try:
-#                             upload_result = drive_service.upload_image(image_file)
-#                             new_images.append(upload_result['direct_url'])
-#                             print(f"✅ New image uploaded to Google Drive: {upload_result['direct_url']}")
-#                         except Exception as upload_error:
-#                             print(f"❌ Failed to upload image to Google Drive: {str(upload_error)}")
-#                             continue
-            
-#             # Handle image removal
-#             if 'remove_images' in data:
-#                 try:
-#                     remove_indices = [int(i) for i in data['remove_images'].split(',')]
-#                     current_images = [img for i, img in enumerate(current_images) if i not in remove_indices]
-#                 except ValueError:
-#                     print("⚠️ Invalid remove_images format")
-                    
-#         elif request.is_json:
-#             # JSON data handling
-#             data = request.get_json()
-#             if 'images' in data:
-#                 new_images = data['images'] if isinstance(data['images'], list) else [data['images']]
-        
-#         # Update product fields
-#         if 'name' in data:
-#             product.name = data['name']
-#         if 'description' in data:
-#             product.description = data['description']
-#         if 'price' in data:
-#             product.price = float(data['price'])
-#         if 'stock' in data:
-#             product.stock = int(data['stock'])
-#         if 'category' in data:
-#             category_name = data['category']
-#             category = Category.query.filter_by(name=category_name).first()
-#             if category:
-#                 product.category_id = category.id
-#             else:
-#                 return jsonify({'error': f'Category "{category_name}" not found'}), 400
-#         if 'is_active' in data:
-#             product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
-        
-#         # Update images - combine existing (minus removed) with new images
-#         if new_images or current_images != (product.image_list or []):
-#             final_images = current_images + new_images
-#             product.image_list = final_images
-#             print(f"📸 Updated product images: {final_images}")
-        
-#         db.session.commit()
-        
-#         return jsonify({
-#             'message': 'Product updated successfully',
-#             'product': product.to_dict()
-#         }), 200
-        
-#     except Exception as e:
-#         db.session.rollback()
-#         import traceback
-#         traceback.print_exc()
-#         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
 
-# # Add a new route for standalone image upload
-@vendors_bp.route('/upload-image', methods=['POST'])
+    # ============ AWS========
+
+    @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
 @jwt_required()
-def upload_image(self, file_storage, filename=None):
-    """Upload a Flask FileStorage object to Google Drive"""
+def update_vendor_product(product_id):
+    """Update a product for the current vendor with S3 support"""
+    user_id = get_jwt_identity()
+    vendor = Vendor.query.filter_by(user_id=user_id).first()
+    
+    if not vendor:
+        return jsonify({'error': 'Vendor profile not found'}), 404
+    
+    if vendor.status != VendorStatus.APPROVED:
+        return jsonify({'error': 'Vendor not approved'}), 403
+    
+    product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
+    if not product:
+        return jsonify({'error': 'Product not found or access denied'}), 404
+    
     try:
-        print("🚀 STARTING GOOGLE DRIVE UPLOAD PROCESS")
+        data = {}
+        new_images = []
+        current_images = product.image_list or []
         
-        if not filename:
-            filename = file_storage.filename
+        # Handle form data or JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # Process form data
+            for key in request.form:
+                data[key] = request.form.get(key)
+            
+            # Handle new image uploads to S3
+            if 'images' in request.files:
+                image_files = request.files.getlist('images')
+                for image_file in image_files:
+                    if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+                        try:
+                            print(f"🔄 Uploading new image to S3: {image_file.filename}")
+                            upload_result = s3_storage_service.upload_image(image_file)
+                            new_images.append(upload_result['direct_url'])
+                            print(f"✅ New image uploaded to S3: {upload_result['direct_url']}")
+                        except Exception as upload_error:
+                            print(f"❌ Failed to upload image to S3: {str(upload_error)}")
+                            continue
+            
+            # Handle image removal
+            if 'remove_images' in data:
+                try:
+                    remove_indices = [int(i) for i in data['remove_images'].split(',')]
+                    current_images = [img for i, img in enumerate(current_images) if i not in remove_indices]
+                    print(f"🗑️ Removed images at indices: {remove_images}")
+                except ValueError:
+                    print("⚠️ Invalid remove_images format")
+                    
+        elif request.is_json:
+            # JSON data handling
+            data = request.get_json()
+            if 'images' in data:
+                new_images = data['images'] if isinstance(data['images'], list) else [data['images']]
         
-        print(f"🔍 Upload details:")
-        print(f"   Original filename: {filename}")
-        print(f"   MIME type: {file_storage.mimetype}")
-        print(f"   Content type: {file_storage.content_type}")
+        # Update product fields
+        if 'name' in data:
+            product.name = data['name']
+        if 'description' in data:
+            product.description = data['description']
+        if 'price' in data:
+            product.price = float(data['price'])
+        if 'stock' in data:
+            product.stock = int(data['stock'])
+        if 'category' in data:
+            category_name = data['category']
+            category = Category.query.filter_by(name=category_name).first()
+            if category:
+                product.category_id = category.id
+            else:
+                return jsonify({'error': f'Category "{category_name}" not found'}), 400
+        if 'is_active' in data:
+            product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
         
-        # Check if service is available
-        if not self.service:
-            raise Exception("Google Drive service not initialized")
+        # Update images - combine existing (minus removed) with new images
+        if new_images or current_images != (product.image_list or []):
+            final_images = current_images + new_images
+            product.image_list = final_images
+            print(f"📸 Updated product images: {final_images}")
         
-        # Test file reading
-        current_pos = file_storage.tell()
-        print(f"🔍 File stream position: {current_pos}")
+        db.session.commit()
         
-        file_data = file_storage.read()
-        print(f"🔍 File data read: {len(file_data)} bytes")
+        return jsonify({
+            'message': 'Product updated successfully',
+            'product': product.to_dict()
+        }), 200
         
-        if len(file_data) == 0:
-            raise Exception("File is empty - no data could be read")
-        
-        # Reset file pointer
-        file_storage.seek(0)
-        file_stream = io.BytesIO(file_data)
-        
-        # Generate unique filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
-        unique_filename = f"product_{timestamp}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        
-        print(f"📤 Generated unique filename: {unique_filename}")
-        
-        # Create file metadata
-        file_metadata = {
-            'name': unique_filename,
-            'parents': [self.folder_id]
-        }
-        
-        print(f"🔍 File metadata: {file_metadata}")
-        
-        # Create media upload
-        media = MediaIoBaseUpload(
-            file_stream, 
-            mimetype=file_storage.mimetype,
-            resumable=False  # Change to False for simpler debugging
-        )
-        
-        print("🔍 Starting Google Drive API call...")
-        
-        # Upload file
-        file = self.service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, name, webViewLink, mimeType, size'
-        ).execute()
-
-        print(f"✅ File uploaded to Google Drive!")
-        print(f"   File ID: {file.get('id')}")
-        print(f"   File Name: {file.get('name')}")
-
-        # Make file publicly accessible
-        print("🔍 Setting file permissions...")
-        self.service.permissions().create(
-            fileId=file.get('id'),
-            body={
-                'role': 'reader',
-                'type': 'anyone'
-            }
-        ).execute()
-
-        print("✅ File permissions set to public")
-
-        # Return direct view URL
-        direct_url = f"https://drive.google.com/uc?export=view&id={file.get('id')}"
-        
-        result = {
-            'file_id': file.get('id'),
-            'direct_url': direct_url,
-            'web_view_link': file.get('webViewLink'),
-            'file_name': file.get('name'),
-            'original_filename': filename
-        }
-        
-        print(f"🎉 UPLOAD SUCCESSFUL!")
-        print(f"   Direct URL: {direct_url}")
-        
-        return result
-
     except Exception as e:
-        print(f"💥 GOOGLE DRIVE UPLOAD FAILED: {str(e)}")
+        db.session.rollback()
+        print(f"💥 Product update failed: {str(e)}")
         import traceback
-        print("🔍 Full traceback:")
         traceback.print_exc()
-        raise Exception(f"Failed to upload to Google Drive: {str(e)}")
+        return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
+
 
 @vendors_bp.route('/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
