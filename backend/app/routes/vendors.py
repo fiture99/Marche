@@ -675,90 +675,90 @@ def create_vendor_product():
 
 
 # ======= Local=======
-@vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
-@jwt_required()
-def update_vendor_product(product_id):
-    """Update a product for the current vendor"""
-    user_id = get_jwt_identity()
-    vendor = Vendor.query.filter_by(user_id=user_id).first()
+# @vendors_bp.route('/products/<int:product_id>', methods=['PUT'])
+# @jwt_required()
+# def update_vendor_product(product_id):
+#     """Update a product for the current vendor"""
+#     user_id = get_jwt_identity()
+#     vendor = Vendor.query.filter_by(user_id=user_id).first()
     
-    if not vendor:
-        return jsonify({'error': 'Vendor profile not found'}), 404
+#     if not vendor:
+#         return jsonify({'error': 'Vendor profile not found'}), 404
     
-    if vendor.status != VendorStatus.APPROVED:
-        return jsonify({'error': 'Vendor not approved'}), 403
+#     if vendor.status != VendorStatus.APPROVED:
+#         return jsonify({'error': 'Vendor not approved'}), 403
     
-    product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
-    if not product:
-        return jsonify({'error': 'Product not found or access denied'}), 404
+#     product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
+#     if not product:
+#         return jsonify({'error': 'Product not found or access denied'}), 404
     
-    # Handle form data or JSON
-    if request.content_type.startswith('multipart/form-data'):
-        data = {}
-        for key in request.form:
-            data[key] = request.form.get(key)
+#     # Handle form data or JSON
+#     if request.content_type.startswith('multipart/form-data'):
+#         data = {}
+#         for key in request.form:
+#             data[key] = request.form.get(key)
         
-        # Handle image upload
-        if 'images' in request.files:
-            image_files = request.files.getlist('images')
-            image_paths = []
-            for image_file in image_files:
-                if image_file and allowed_file(image_file.filename):
-                    filename = secure_filename(image_file.filename)
-                    image_path = os.path.join('uploads', 'products', filename)
-                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-                    image_file.save(image_path)
-                    image_paths.append(f'/static/{image_path}')
+#         # Handle image upload
+#         if 'images' in request.files:
+#             image_files = request.files.getlist('images')
+#             image_paths = []
+#             for image_file in image_files:
+#                 if image_file and allowed_file(image_file.filename):
+#                     filename = secure_filename(image_file.filename)
+#                     image_path = os.path.join('uploads', 'products', filename)
+#                     os.makedirs(os.path.dirname(image_path), exist_ok=True)
+#                     image_file.save(image_path)
+#                     image_paths.append(f'/static/{image_path}')
             
-            if image_paths:
-                # Convert list to JSON string or handle based on your DB structure
-                data['images'] = json.dumps(image_paths)
-    else:
-        data = request.get_json()
+#             if image_paths:
+#                 # Convert list to JSON string or handle based on your DB structure
+#                 data['images'] = json.dumps(image_paths)
+#     else:
+#         data = request.get_json()
     
-    try:
-        # Update product fields
-        if 'name' in data:
-            product.name = data['name']
-        if 'description' in data:
-            product.description = data['description']
-        if 'price' in data:
-            product.price = Decimal(str(data['price']))
-        if 'stock' in data:
-            product.stock = int(data['stock'])
-        if 'category' in data:
-            # FIX: Find the Category instance by name, don't assign string directly
-            category_name = data['category']
-            category = Category.query.filter_by(name=category_name).first()
-            if category:
-                product.category_id = category.id  # Assign the foreign key ID
-            else:
-                return jsonify({'error': f'Category "{category_name}" not found'}), 400
-        if 'is_active' in data:
-            product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
-        if 'images' in data:
-            # Handle images based on your database structure
-            # If images is stored as JSON string, parse it
-            if isinstance(data['images'], str):
-                try:
-                    product.images = json.loads(data['images'])
-                except json.JSONDecodeError:
-                    product.images = [data['images']]
-            else:
-                product.images = data['images']
+#     try:
+#         # Update product fields
+#         if 'name' in data:
+#             product.name = data['name']
+#         if 'description' in data:
+#             product.description = data['description']
+#         if 'price' in data:
+#             product.price = Decimal(str(data['price']))
+#         if 'stock' in data:
+#             product.stock = int(data['stock'])
+#         if 'category' in data:
+#             # FIX: Find the Category instance by name, don't assign string directly
+#             category_name = data['category']
+#             category = Category.query.filter_by(name=category_name).first()
+#             if category:
+#                 product.category_id = category.id  # Assign the foreign key ID
+#             else:
+#                 return jsonify({'error': f'Category "{category_name}" not found'}), 400
+#         if 'is_active' in data:
+#             product.is_active = data['is_active'].lower() == 'true' if isinstance(data['is_active'], str) else bool(data['is_active'])
+#         if 'images' in data:
+#             # Handle images based on your database structure
+#             # If images is stored as JSON string, parse it
+#             if isinstance(data['images'], str):
+#                 try:
+#                     product.images = json.loads(data['images'])
+#                 except json.JSONDecodeError:
+#                     product.images = [data['images']]
+#             else:
+#                 product.images = data['images']
         
-        db.session.commit()
+#         db.session.commit()
         
-        return jsonify({
-            'message': 'Product updated successfully',
-            'product': product.to_dict()
-        }), 200
+#         return jsonify({
+#             'message': 'Product updated successfully',
+#             'product': product.to_dict()
+#         }), 200
         
-    except Exception as e:
-        db.session.rollback()
-        import traceback
-        traceback.print_exc()  # This will help with debugging
-        return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
+#     except Exception as e:
+#         db.session.rollback()
+#         import traceback
+#         traceback.print_exc()  # This will help with debugging
+#         return jsonify({'error': 'Product update failed', 'message': str(e)}), 500
 
 
     # ============ AWS========
