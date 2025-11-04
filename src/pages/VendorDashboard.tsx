@@ -6,7 +6,6 @@ import {
   ShoppingBagIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  PlusIcon,
   ArrowPathIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
@@ -14,9 +13,43 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { vendorsAPI, ordersAPI } from '../services/api';
 import ProductList from '../components/vendor/ProductList';
-import OrderList from '../components/vendor/OrderList';
 import VendorProfile from '../components/vendor/VendorProfile';
 import ProductForm from '../components/vendor/ProductForm';
+import VendorOrderList from '../components/vendor/VendorOrderList';
+
+// Define VendorOrder interface to fix the type error
+interface VendorOrder {
+  id: number;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  customer_name: string;
+  items_count: number;
+  order_number?: string;
+  items?: Array<{
+    product_name: string;
+    quantity: number;
+    price: number;
+  }>;
+  // Add vendor-specific fields
+  vendor_id?: string;
+  customer?: {
+    id: string;
+    full_name: string;
+    email: string;
+    phone?: string;
+  };
+  shipping_address?: {
+    full_name: string;
+    street: string;
+    city: string;
+    region: string;
+    phone: string;
+    country?: string;
+    postal_code?: string;
+  };
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+}
 
 interface Vendor {
   id: number;
@@ -410,17 +443,6 @@ const VendorDashboard: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* <div className="flex justify-between items-center mb-6"> */}
-                {/* <h2 className="text-2xl font-bold text-gray-900">Products</h2> */}
-                {/* <button
-                  onClick={() => setShowProductForm(true)}
-                  className="flex items-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  disabled={vendor?.status !== 'approved'}
-                >
-                  <PlusIcon className="w-5 h-5 mr-2" />
-                  Add Product
-                </button> */}
-              {/* </div> */}
               {vendor?.status !== 'approved' ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                   <ShoppingBagIcon className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
@@ -440,13 +462,25 @@ const VendorDashboard: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Fixed orders section - removed comment and fixed type */}
           {activeTab === 'orders' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Orders</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Customer Orders</h2>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                >
+                  <ArrowPathIcon className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              </div>
+              
               {vendor?.status !== 'approved' ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                   <CurrencyDollarIcon className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
@@ -456,7 +490,11 @@ const VendorDashboard: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <OrderList orders={orders} loading={refreshing} />
+                <VendorOrderList 
+                  orders={orders} 
+                  loading={refreshing}
+                  onRefresh={loadVendorData}
+                />
               )}
             </motion.div>
           )}

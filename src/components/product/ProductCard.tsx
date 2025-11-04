@@ -326,7 +326,7 @@ const getImageUrl = (imagePath: string | undefined): string => {
         <img
           src={currentImageUrl}
           alt={product.name}
-          className={`w-full h-48 object-cover transition-all duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-500 ${
             imageLoaded && !imageError
               ? 'opacity-100 group-hover:scale-110' 
               : 'opacity-0'
