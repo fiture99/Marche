@@ -105,35 +105,35 @@ const ErrorMessage: React.FC<{ error: string; onRetry: () => void }> = ({ error,
   </div>
 );
 
-const CustomerOrder: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
-  // Add this function to handle image URL formatting
-  const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return '';
-    
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('https')) {
-      return imagePath;
-    }
-    
-    // If it's a relative path, prepend your API base URL
-    if (imagePath.startsWith('/')) {
-      return `'https://marche-yzzm.onrender.com${imagePath}`;
-    }
-    
-    // For other cases, you might need to adjust this logic
-    return `'https://marche-yzzm.onrender.com/uploads/${imagePath}`;
-  };
+  const CustomerOrder: React.FC = () => {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+  
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+    // Add this function to handle image URL formatting
+    const getImageUrl = (imagePath: string) => {
+      if (!imagePath) return '';
+      
+      // If it's already a full URL, return as is
+      if (imagePath.startsWith('https')) {
+        return imagePath;
+      }
+      
+      // If it's a relative path, prepend your API base URL
+      if (imagePath.startsWith('/')) {
+        return `'https://marche-yzzm.onrender.com${imagePath}`;
+      }
+      
+      // For other cases, you might need to adjust this logic
+      return `'https://marche-yzzm.onrender.com/uploads/${imagePath}`;
+    };
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);

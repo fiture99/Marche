@@ -55,7 +55,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/Marche/shop" className="text-gray-300 hover:text-white transition-colors duration-200">
-                  Shop
+                  Products
                 </Link>
               </li>
               <li>
@@ -90,7 +90,7 @@ export const Footer: React.FC = () => {
                   Vendor Login
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/vendor/support" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Vendor Support
                 </Link>
@@ -99,7 +99,7 @@ export const Footer: React.FC = () => {
                 <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors duration-200">
                   Pricing
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -113,11 +113,11 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-emerald-500" />
-                <span className="text-gray-300">+220 123 4567</span>
+                <span className="text-gray-300">+220 3167095 / +220 3117980</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-emerald-500" />
-                <span className="text-gray-300">info@marche.gm</span>
+                <span className="text-gray-300">laminjawnehlj45@gmail.com</span>
               </div>
             </div>
 

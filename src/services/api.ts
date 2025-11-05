@@ -372,29 +372,6 @@ export const vendorsAPI = {
   deleteVendorProduct: async (productId: number) => {
     return apiClient.delete(`/vendors/products/${productId}`);
   },
-
-  // ✅ ADD VENDOR ORDERS METHODS
-  getMyOrders: async (params?: { 
-    page?: number; 
-    status?: string;
-    sort_by?: string;
-  }) => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
-    
-    const endpoint = `/vendors/orders${queryParams.toString() ? `?${queryParams}` : ''}`;
-    const response = await apiClient.get(endpoint);
-    
-    return response?.data ?? response;
-  },
-
-  getOrderDetails: async (orderId: string) => {
-    const response = await apiClient.get(`/vendors/orders/${orderId}`);
-    return response?.data ?? response;
-  },
-
 };
 
 // Products API functions
@@ -875,6 +852,11 @@ export const adminAPI = {
     const endpoint = `/admin/users${queryParams.toString() ? `?${queryParams}` : ''}`;
     // console.log('👥 Fetching users:', endpoint);
     return apiClient.get(endpoint);
+  },
+
+  updateUserStatus: async (userId: number, isActive: boolean) => {
+    console.log('🔘 Updating user status:', userId, 'to', isActive);
+    return apiClient.put(`/admin/users/${userId}/status`, { is_active: isActive });
   },
   
 };

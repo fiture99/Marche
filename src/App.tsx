@@ -16,6 +16,8 @@ import { Checkout } from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
 import VendorDashboard from './pages/VendorDashboard';
 import CustomerOrder from './pages/CustomerOrder';
+import AboutUs from './pages/AbountUs';
+import ContactUs from './pages/ContactUs';
 
 function App() {
   return (
@@ -37,6 +39,10 @@ function App() {
                 <Route path="/Marche/admin/*" element={<AdminDashboard />} />
                 <Route path="/Marche/vendor/*" element={<VendorDashboard />} />
                 <Route path="/Marche/orders" element={<CustomerOrder />} />
+                <Route path="/Marche/about" element={<AboutUs />} />
+                <Route path="/Marche/contact" element={<ContactUs />} />
+
+                
               </Routes>
             </main>
             <Footer />

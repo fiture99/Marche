@@ -14,6 +14,8 @@ interface Vendor {
   logo?: string;
   address?: string;
   description?: string;
+  status: 'approved' | 'pending' | 'suspended';
+  is_active: boolean;
   totalProducts?: number;
   rating?: number;
 }
@@ -254,7 +256,10 @@ export const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {vendors.slice(0, 3).map((vendor) => (
+            {vendors
+            .filter((vendor) => vendor.status === 'approved' && vendor.is_active == true)
+            .slice(0, 3)
+            .map((vendor) => (
               <Link
                 key={vendor.id}
                 to={`/Marche/vendors/${vendor.id}`}
