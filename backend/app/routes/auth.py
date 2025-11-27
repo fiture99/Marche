@@ -20,46 +20,46 @@ class LoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True)
 
-@auth_bp.route('/create-admin', methods=['POST'])
-def create_admin():
-    """Simple route to create an admin user"""
+# @auth_bp.route('/create-admin', methods=['POST'])
+# def create_admin():
+#     """Simple route to create an admin user"""
     
-    data = request.json
+#     data = request.json
     
-    # Required fields
-    email = data.get('email')
-    password = data.get('password')
-    first_name = data.get('first_name', 'Admin')
-    last_name = data.get('last_name', 'User')
+#     # Required fields
+#     email = data.get('email')
+#     password = data.get('password')
+#     first_name = data.get('first_name', 'Admin')
+#     last_name = data.get('last_name', 'User')
     
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
+#     if not email or not password:
+#         return jsonify({'error': 'Email and password are required'}), 400
 
-    # Check if admin already exists
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Admin already exists'}), 409
+#     # Check if admin already exists
+#     if User.query.filter_by(email=email).first():
+#         return jsonify({'error': 'Admin already exists'}), 409
 
-    try:
-        admin = User(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            role=UserRole.ADMIN,
-            is_active=True
-        )
-        admin.set_password(password)
+#     try:
+#         admin = User(
+#             email=email,
+#             first_name=first_name,
+#             last_name=last_name,
+#             role=UserRole.ADMIN,
+#             is_active=True
+#         )
+#         admin.set_password(password)
 
-        db.session.add(admin)
-        db.session.commit()
+#         db.session.add(admin)
+#         db.session.commit()
 
-        return jsonify({
-            'message': 'Admin created successfully',
-            'user': admin.to_dict()
-        }), 201
+#         return jsonify({
+#             'message': 'Admin created successfully',
+#             'user': admin.to_dict()
+#         }), 201
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': 'Failed to create admin', 'message': str(e)}), 500
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({'error': 'Failed to create admin', 'message': str(e)}), 500
 
 
 @auth_bp.route('/register', methods=['POST'])

@@ -36,87 +36,134 @@ export const CustomerVendors: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchVendorsAndUsers = async () => {
+  // const fetchVendorsAndUsers = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+      
+  //     console.log('🔄 Fetching vendors and users...');
+      
+  //     // Fetch both vendors and users
+  //     const [vendorsResponse, usersResponse] = await Promise.all([
+  //       vendorsAPI.getVendors(),
+  //       adminAPI.getUsers() // This gets all users including their active status
+  //     ]);
+
+  //     console.log('📦 Vendors API Response:', vendorsResponse);
+  //     console.log('👥 Users API Response:', usersResponse);
+
+  //     // Handle vendors response structure
+  //     let vendorsData: Vendor[] = [];
+  //     if (vendorsResponse && typeof vendorsResponse === 'object') {
+  //       if (vendorsResponse.data) {
+  //         vendorsData = vendorsResponse.data.vendors || vendorsResponse.data.rows || vendorsResponse.data.items || vendorsResponse.data || [];
+  //       } else if (vendorsResponse.vendors) {
+  //         vendorsData = vendorsResponse.vendors;
+  //       } else if (Array.isArray(vendorsResponse)) {
+  //         vendorsData = vendorsResponse;
+  //       } else {
+  //         vendorsData = vendorsResponse.rows || vendorsResponse.items || [];
+  //       }
+  //     }
+
+  //     // Handle users response structure
+  //     let usersData: User[] = [];
+  //     if (usersResponse && typeof usersResponse === 'object') {
+  //       if (usersResponse.data) {
+  //         usersData = usersResponse.data.users || usersResponse.data.rows || usersResponse.data.items || usersResponse.data || [];
+  //       } else if (usersResponse.users) {
+  //         usersData = usersResponse.users;
+  //       } else if (Array.isArray(usersResponse)) {
+  //         usersData = usersResponse;
+  //       } else {
+  //         usersData = usersResponse.rows || usersResponse.items || [];
+  //       }
+  //     }
+
+  //     console.log('👥 Extracted Users:', usersData);
+  //     console.log('🏪 Extracted Vendors:', vendorsData);
+
+  //     setAllUsers(usersData);
+
+  //     // Map vendors to ensure consistent property names
+  //     const formattedVendors = vendorsData.map(vendor => ({
+  //       ...vendor,
+  //       total_products: vendor.total_products || vendor.product_count || vendor.items_count || vendor.total_products || 0,
+  //     }));
+
+  //     // Filter vendors: only show approved vendors with active users
+  //     const activeApprovedVendors = formattedVendors.filter(vendor => {
+  //       const isApproved = vendor.status === 'approved';
+        
+  //       // Find the user associated with this vendor
+  //       // We match by email since vendor.email should match user.email
+  //       const vendorUser = usersData.find(user => 
+  //         user.email === vendor.email || user.id === vendor.user_id
+  //       );
+        
+  //       const isUserActive = vendorUser ? vendorUser.is_active : true; // Default to true if user not found
+        
+  //       console.log(`🎯 ${vendor.name}: approved=${isApproved}, user_active=${isUserActive}, show=${isApproved && isUserActive}`);
+        
+  //       return isApproved && isUserActive;
+  //     });
+
+  //     console.log('📊 Final Result:', {
+  //       totalVendors: formattedVendors.length,
+  //       activeApprovedVendors: activeApprovedVendors.length,
+  //       vendors: activeApprovedVendors.map(v => ({ id: v.id, name: v.name }))
+  //     });
+      
+  //     setVendors(activeApprovedVendors);
+  //   } catch (err) {
+  //     console.error('❌ Failed to fetch vendors:', err);
+  //     setError('Failed to load vendors. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchVendorsAndUsers();
+  // }, []);
+
+  const fetchVendors = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Fetching vendors and users...');
-      
-      // Fetch both vendors and users
-      const [vendorsResponse, usersResponse] = await Promise.all([
-        vendorsAPI.getVendors(),
-        adminAPI.getUsers() // This gets all users including their active status
-      ]);
+      const response = await vendorsAPI.getVendors();
+      // console.log('Vendors API Response:', response); // Debug log
 
-      console.log('📦 Vendors API Response:', vendorsResponse);
-      console.log('👥 Users API Response:', usersResponse);
-
-      // Handle vendors response structure
+      // Handle different response structures
       let vendorsData: Vendor[] = [];
-      if (vendorsResponse && typeof vendorsResponse === 'object') {
-        if (vendorsResponse.data) {
-          vendorsData = vendorsResponse.data.vendors || vendorsResponse.data.rows || vendorsResponse.data.items || vendorsResponse.data || [];
-        } else if (vendorsResponse.vendors) {
-          vendorsData = vendorsResponse.vendors;
-        } else if (Array.isArray(vendorsResponse)) {
-          vendorsData = vendorsResponse;
+
+      if (response && typeof response === 'object') {
+        if (response.data) {
+          // Case 1: Response has data property
+          vendorsData = response.data.vendors || response.data.rows || response.data.items || response.data || [];
+        } else if (response.vendors) {
+          // Case 2: Direct response with vendors array
+          vendorsData = response.vendors;
+        } else if (Array.isArray(response)) {
+          // Case 3: Response is directly an array
+          vendorsData = response;
         } else {
-          vendorsData = vendorsResponse.rows || vendorsResponse.items || [];
+          // Case 4: Try to extract vendors from root object
+          vendorsData = response.rows || response.items || [];
         }
       }
-
-      // Handle users response structure
-      let usersData: User[] = [];
-      if (usersResponse && typeof usersResponse === 'object') {
-        if (usersResponse.data) {
-          usersData = usersResponse.data.users || usersResponse.data.rows || usersResponse.data.items || usersResponse.data || [];
-        } else if (usersResponse.users) {
-          usersData = usersResponse.users;
-        } else if (Array.isArray(usersResponse)) {
-          usersData = usersResponse;
-        } else {
-          usersData = usersResponse.rows || usersResponse.items || [];
-        }
-      }
-
-      console.log('👥 Extracted Users:', usersData);
-      console.log('🏪 Extracted Vendors:', vendorsData);
-
-      setAllUsers(usersData);
 
       // Map vendors to ensure consistent property names
       const formattedVendors = vendorsData.map(vendor => ({
         ...vendor,
-        total_products: vendor.total_products || vendor.product_count || vendor.items_count || vendor.total_products || 0,
+        // Handle different property names for product count
+        total_products: vendor.total_products || vendor.product_count || vendor.items_count || vendor.total_products || 0
       }));
 
-      // Filter vendors: only show approved vendors with active users
-      const activeApprovedVendors = formattedVendors.filter(vendor => {
-        const isApproved = vendor.status === 'approved';
-        
-        // Find the user associated with this vendor
-        // We match by email since vendor.email should match user.email
-        const vendorUser = usersData.find(user => 
-          user.email === vendor.email || user.id === vendor.user_id
-        );
-        
-        const isUserActive = vendorUser ? vendorUser.is_active : true; // Default to true if user not found
-        
-        console.log(`🎯 ${vendor.name}: approved=${isApproved}, user_active=${isUserActive}, show=${isApproved && isUserActive}`);
-        
-        return isApproved && isUserActive;
-      });
-
-      console.log('📊 Final Result:', {
-        totalVendors: formattedVendors.length,
-        activeApprovedVendors: activeApprovedVendors.length,
-        vendors: activeApprovedVendors.map(v => ({ id: v.id, name: v.name }))
-      });
-      
-      setVendors(activeApprovedVendors);
+      setVendors(formattedVendors);
     } catch (err) {
-      console.error('❌ Failed to fetch vendors:', err);
+      console.error('Failed to fetch vendors:', err);
       setError('Failed to load vendors. Please try again.');
     } finally {
       setLoading(false);
@@ -124,7 +171,7 @@ export const CustomerVendors: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchVendorsAndUsers();
+    fetchVendors();
   }, []);
 
   // Filter approved vendors by search term
@@ -171,7 +218,7 @@ export const CustomerVendors: React.FC = () => {
           <div className="text-red-500 text-2xl mb-4">Error</div>
           <div className="text-gray-600 mb-4">{error}</div>
           <button 
-            onClick={fetchVendorsAndUsers}
+            onClick={fetchVendors}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Try Again
