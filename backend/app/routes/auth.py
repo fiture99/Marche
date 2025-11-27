@@ -20,6 +20,62 @@ class LoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True)
 
+@auth_bp.route('/create-admin', methods=['POST'])
+@jwt_required()
+def create_admin():
+    """Create an admin user (admin-only access)"""
+
+    # Get current user
+    current_user_id = int(get_jwt_identity())
+    current_user = User.query.get(current_user_id)
+
+    # Only admins are allowed to create other admins
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'error': 'Unauthorized. Admin access required.'}), 403
+
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    phone = data.get('phone')
+
+    # Basic validation
+    if not email or not password or not first_name or not last_name:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+
+    # Check if user already exists
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already exists"}), 409
+
+    try:
+        # Create admin user
+        admin_user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            role=UserRole.ADMIN,
+            is_active=True
+        )
+        admin_user.set_password(password)
+
+        db.session.add(admin_user)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Admin user created successfully",
+            "user": admin_user.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to create admin", "message": str(e)}), 500
+
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """Register a new user"""
